@@ -1,0 +1,138 @@
+<?php
+
+namespace App\Providers\Filament;
+
+use App\Filament\Pages\Profile;
+use App\Filament\Pages\Settings;
+use App\Notifications\LowStockNotification;
+use Filament\Http\Middleware\Authenticate;
+use Filament\Http\Middleware\AuthenticateSession;
+use Filament\Http\Middleware\DisableBladeIconComponents;
+use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\MenuItem;
+use Filament\Navigation\NavigationGroup;
+use Filament\Notifications\Notification;
+use Filament\Pages\Dashboard;
+use Filament\Support\Assets\Js;
+use Filament\Support\Colors\Color;
+use Filament\Support\Facades\FilamentIcon;
+use Filament\Support\Colors;
+use Filament\Widgets\AccountWidget;
+use Filament\Widgets\FilamentInfoWidget;
+use Filament\Panel;
+use Filament\PanelProvider;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
+
+class AdminPanelProvider extends PanelProvider
+{
+    public function boot(): void
+    {
+        // Las notificaciones de base de datos se configuran automáticamente
+        // No necesitamos configuración adicional para mostrarlas
+    }
+
+    public function panel(Panel $panel): Panel
+    {
+        // Obtener configuración guardada
+        $pharmacyName = \Illuminate\Support\Facades\Cache::get('settings.pharmacy_name', config('app.name'));
+
+        return $panel
+            ->default()
+            ->id('admin')
+            ->brandName($pharmacyName)
+            ->brandLogo('/Images/Pharma1.jpeg')
+            ->brandLogoHeight('3.5rem')
+            ->sidebarCollapsibleOnDesktop()
+            ->path('admin')
+            ->darkMode(true)  // Habilitar selector de modo oscuro
+            ->renderHook(
+                'panels::body.end',
+                fn() => view('filament.hooks.avatar-refresh')
+            )
+            ->renderHook(
+                'panels::body.end',
+                fn() => view('filament.hooks.money-format')
+            )
+            ->renderHook(
+                'panels::styles.before',
+                fn() => view('filament.hooks.custom-styles')
+            )
+            ->renderHook(
+                'panels::user-menu.before',
+                fn() => view('filament.hooks.shopping-cart-trigger')
+            )
+            ->renderHook(
+                'panels::body.end',
+                fn() => view('filament.hooks.barcode-scanner-listener')
+            )
+            ->userMenuItems([
+                'profile' => MenuItem::make()
+                    ->label('Mi Perfil')
+                    ->url(fn(): string => Profile::getUrl())
+                    ->icon('heroicon-o-user-circle'),
+                'settings' => MenuItem::make()
+                    ->label('Configuración')
+                    ->url(fn(): string => Settings::getUrl())
+                    ->icon('heroicon-o-cog-6-tooth'),
+            ])
+            ->errorNotifications()
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('30s')
+            ->icons([
+                'notifications::database-notifications-trigger' => 'heroicon-o-bell',
+            ])
+            ->colors([
+                'danger' => Color::Amber,
+            ])
+            ->Font('Poppins')
+            ->login()
+            ->Colors([
+                'danger' => Color::Red,
+            ])
+            // ->renderHook(
+            //     'panels::auth.login.form.before',
+            //     fn() => view('filament.login-extra'),
+            // )
+            ->sidebarWidth('20rem')
+            ->navigationGroups([
+                NavigationGroup::make('Shop')
+                    ->icon('heroicon-o-shopping-bag'),
+                NavigationGroup::make('Blog')
+                    ->icon('heroicon-o-document-text'),
+            ])
+            ->colors([
+                'primary' => Color::Green,
+            ])
+            ->registration(false)
+            ->passwordReset()
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
+            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
+            ->pages([
+                Dashboard::class,
+                Profile::class,
+            ])
+            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            ->widgets([
+                // Widgets personalizados del dashboard
+            ])
+            ->middleware([
+                EncryptCookies::class,
+                AddQueuedCookiesToResponse::class,
+                StartSession::class,
+                AuthenticateSession::class,
+                ShareErrorsFromSession::class,
+                VerifyCsrfToken::class,
+                SubstituteBindings::class,
+                DisableBladeIconComponents::class,
+                DispatchServingFilamentEvent::class,
+            ])
+            ->authMiddleware([
+                Authenticate::class,
+            ]);
+    }
+}

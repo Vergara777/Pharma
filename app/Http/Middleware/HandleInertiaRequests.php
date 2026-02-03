@@ -39,6 +39,33 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'user.roles' => $request->user() ? $request->user()->roles->pluck('name') : [],
             'user.permissions' => $request->user() ? $request->user()->getPermissionsViaRoles()->pluck('name') : [],
-        ];
+        
+            'navigation' => [
+                [
+                    'name' => 'Panel Principal',
+                    'route' => 'dashboard',
+                    'icon' => 'fas fa-th-large',
+                    'show' => true,
+                ],
+                [
+                    'name' => 'Productos',
+                    'route' => 'products.index', // Asegúrate que esta ruta exista en web.php
+                    'icon' => 'fas fa-pills',
+                    'show' => $request->user()?->can('Leer productos'),
+                ],
+                [
+                    'name' => 'Categorías',
+                    'route' => 'categories.index',
+                    'icon' => 'fas fa-tags',
+                    'show' => $request->user()?->can('Leer categorías'),
+                ],
+                [
+                    'name' => 'Usuarios y Roles',
+                    'route' => 'roles.index',
+                    'icon' => 'fas fa-users-cog',
+                    'show' => $request->user()?->hasRole('admin'),
+                ],
+            ]
+            ];
     }
 }

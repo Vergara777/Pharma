@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Filament\Support\Facades\FilamentIcon;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +20,32 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+
+        // Restaurar inventario cuando el usuario cierre sesión
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Auth\Events\Logout::class,
+            function ($event) {
+                $this->restoreCartInventory();
+            }
+        );
+    }
+
+    /**
+     * Restaurar el inventario de productos en el carrito
+     */
+    protected function restoreCartInventory(): void
+    {
+        $cart = session()->get('cart', []);
+        
+        if (!empty($cart)) {
+            foreach ($cart as $item) {
+                $product = \App\Models\Product::find($item['product_id']);
+                if ($product) {
+                    $product->update(['stock' => $product->stock + $item['quantity']]);
+                }
+            }
+            
+            session()->forget('cart');
+        }
     }
 }

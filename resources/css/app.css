@@ -5,3 +5,10 @@
 [x-cloak] {
     display: none;
 }
+
+/* resources/css/filament.css */
+.fi-ta-ctn { /* Clase de Filament para el contenedor de la tabla */
+    max-width: 1200px !important; /* Cambia el valor según lo que necesites */
+    margin-left: auto;
+    margin-right: auto;
+}
