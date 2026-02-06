@@ -67,11 +67,26 @@ class CartController extends Controller
             return redirect()->back()->with('error', 'Complete todos los campos');
         }
 
-        // Validar que si se solicita factura, haya datos del cliente
-        if ($generateInvoice && empty($customerName)) {
+        // Verificar si hay una caja abierta
+        $openSession = \App\Models\CashSession::where('user_id', auth()->id())
+            ->where('status', 'open')
+            ->first();
+        
+        if (!$openSession) {
+            \Filament\Notifications\Notification::make()
+                ->title('Caja Cerrada')
+                ->body('Debes abrir una caja antes de realizar ventas')
+                ->danger()
+                ->duration(5000)
+                ->send();
+            return redirect()->back();
+        }
+
+        // Validar que si se solicita factura con datos, haya datos del cliente
+        if ($generateInvoice && $request->input('invoice_type') === 'with_data' && empty($customerName)) {
             \Filament\Notifications\Notification::make()
                 ->title('Datos incompletos')
-                ->body('Debe capturar los datos del cliente para generar la factura')
+                ->body('Debe capturar los datos del cliente para generar la factura con datos')
                 ->danger()
                 ->duration(5000)
                 ->send();
@@ -119,6 +134,7 @@ class CartController extends Controller
                 'user_id' => auth()->id(),
                 'user_role' => auth()->user()->role ?? null,
                 'user_name' => auth()->user()->name,
+                'cash_session_id' => $openSession->id,
                 'status' => 'active',
                 'discount_percent' => 0,
                 'discount_amount' => 0,

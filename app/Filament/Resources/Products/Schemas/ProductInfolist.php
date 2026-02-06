@@ -30,6 +30,19 @@ class ProductInfolist
                             ->label('SKU')
                             ->badge()
                             ->color('primary'),
+                        TextEntry::make('status')
+                            ->label('Estado')
+                            ->badge()
+                            ->color(fn (string $state): string => match ($state) {
+                                'active' => 'success',
+                                'retired' => 'danger',
+                                default => 'gray',
+                            })
+                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                'active' => 'Activo',
+                                'retired' => 'Retirado',
+                                default => ucfirst($state),
+                            }),
                         TextEntry::make('category.name')
                             ->label('Categoría')
                             ->badge()
@@ -54,11 +67,15 @@ class ProductInfolist
                             ->size('lg')
                             ->weight('bold')
                             ->color('success'),
+                        TextEntry::make('cost')
+                            ->label('Costo')
+                            ->formatStateUsing(fn ($state) => '$' . number_format($state, 0, ',', '.'))
+                            ->color('info'),
                         TextEntry::make('stock')
                             ->label('Stock Actual')
                             ->formatStateUsing(function ($state, $record) {
                                 $stock = $record->stock;
-                                $min = $record->stock_minimum ?? 20;
+                                $min = $record->min_stock ?? 5;
                                 
                                 if ($stock == 0) {
                                     $status = '¡Sin stock!';
@@ -74,7 +91,7 @@ class ProductInfolist
                             })
                             ->color(function ($record) {
                                 $stock = $record->stock;
-                                $min = $record->stock_minimum ?? 20;
+                                $min = $record->min_stock ?? 5;
                                 
                                 if ($stock == 0 || $stock <= $min) {
                                     return 'danger';
@@ -85,22 +102,22 @@ class ProductInfolist
                                 }
                             })
                             ->weight('bold'),
-                        TextEntry::make('stock_minimum')
+                        TextEntry::make('min_stock')
                             ->label('Stock Mínimo')
                             ->numeric()
                             ->placeholder('-'),
-                        TextEntry::make('stock_maximum')
+                        TextEntry::make('max_stock')
                             ->label('Stock Máximo')
                             ->numeric()
                             ->placeholder('-'),
-                        TextEntry::make('expiration_date')
+                        TextEntry::make('expires_at')
                             ->label('Fecha de Vencimiento')
                             ->date('d/m/Y')
                             ->placeholder('Sin fecha de vencimiento')
                             ->color(function ($record) {
-                                if (!$record->expiration_date) return 'gray';
+                                if (!$record->expires_at) return 'gray';
                                 
-                                $daysUntilExpiration = now()->diffInDays($record->expiration_date, false);
+                                $daysUntilExpiration = now()->diffInDays($record->expires_at, false);
                                 $alertDays = \Illuminate\Support\Facades\Cache::get('settings.expiration_alert_days', 30);
                                 
                                 if ($daysUntilExpiration < 0) {
@@ -112,9 +129,9 @@ class ProductInfolist
                                 }
                             })
                             ->suffix(function ($record) {
-                                if (!$record->expiration_date) return '';
+                                if (!$record->expires_at) return '';
                                 
-                                $daysUntilExpiration = now()->diffInDays($record->expiration_date, false);
+                                $daysUntilExpiration = now()->diffInDays($record->expires_at, false);
                                 
                                 if ($daysUntilExpiration < 0) {
                                     return ' (Vencido)';
@@ -130,6 +147,49 @@ class ProductInfolist
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
+                
+                Section::make('Ubicación en Bodega')
+                    ->schema([
+                        TextEntry::make('shelf')
+                            ->label('Estante')
+                            ->badge()
+                            ->color('primary')
+                            ->placeholder('-'),
+                        TextEntry::make('row')
+                            ->label('Fila')
+                            ->badge()
+                            ->color('warning')
+                            ->placeholder('-'),
+                        TextEntry::make('position')
+                            ->label('Posición')
+                            ->badge()
+                            ->color('info')
+                            ->placeholder('-'),
+                    ])
+                    ->columns(3),
+                
+                Section::make('Presentación y Empaque')
+                    ->schema([
+                        TextEntry::make('unit_name')
+                            ->label('Nombre de Unidad')
+                            ->placeholder('unidad'),
+                        TextEntry::make('units_per_package')
+                            ->label('Unidades por Paquete')
+                            ->numeric()
+                            ->placeholder('1'),
+                        TextEntry::make('package_name')
+                            ->label('Nombre del Paquete')
+                            ->placeholder('-')
+                            ->columnSpanFull(),
+                        TextEntry::make('price_unit')
+                            ->label('Precio por Unidad')
+                            ->formatStateUsing(fn ($state) => $state ? '$' . number_format($state, 0, ',', '.') : '-'),
+                        TextEntry::make('price_package')
+                            ->label('Precio por Paquete')
+                            ->formatStateUsing(fn ($state) => $state ? '$' . number_format($state, 0, ',', '.') : '-'),
+                    ])
+                    ->columns(2)
+                    ->collapsible(),
                 
                 Section::make('Información Adicional')
                     ->schema([

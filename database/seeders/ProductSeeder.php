@@ -18,10 +18,15 @@ class ProductSeeder extends Seeder
             'name' => 'Acetaminofen 500mg',
             'description' => 'Caja por 10 tabletas',
             'image' => '',
-            'price' => 25.000,
+            'price' => 25000,
+            'cost' => 15000,
             'stock' => 100,
-            'stock_minimum' => 10,
-            'stock_maximum' => 500,
+            'min_stock' => 10,
+            'max_stock' => 500,
+            'unit_name' => 'tableta',
+            'package_name' => 'Caja x 10',
+            'units_per_package' => 10,
+            'status' => 'active',
             'category_id' => 1, // Analgesicos
             'supplier_id' => 1, // Drogueria Central
         ]);
@@ -31,10 +36,15 @@ class ProductSeeder extends Seeder
             'name' => 'Vitamina C Efervescente',
             'description' => 'Tubo por 10 tabletas sabor naranja',
             'image' => '',
-            'price' => 15.500,
+            'price' => 15500,
+            'cost' => 9000,
             'stock' => 50,
-            'stock_minimum' => 5,
-            'stock_maximum' => 200,
+            'min_stock' => 5,
+            'max_stock' => 200,
+            'unit_name' => 'tableta',
+            'package_name' => 'Tubo x 10',
+            'units_per_package' => 10,
+            'status' => 'active',
             'category_id' => 3, // Vitaminas
             'supplier_id' => 2, // PharmaVida
         ]);

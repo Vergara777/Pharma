@@ -91,6 +91,11 @@ class Ventas extends Model
         return $this->belongsTo(PaymentMethod::class);
     }
 
+    public function cashSession(): BelongsTo
+    {
+        return $this->belongsTo(CashSession::class);
+    }
+
     // Scopes
     public function scopeActive($query)
     {

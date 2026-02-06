@@ -15,6 +15,7 @@ use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Hash;
 use BackedEnum;
+use UnitEnum;
 
 class Profile extends Page implements HasForms
 {
@@ -26,7 +27,9 @@ class Profile extends Page implements HasForms
 
     protected static ?string $title = 'Mi Perfil';
 
-    protected static ?int $navigationSort = 99;
+    protected static ?int $navigationSort = 6;
+
+    protected static UnitEnum|string|null $navigationGroup = 'Configuración';
 
     public ?array $data = [];
     

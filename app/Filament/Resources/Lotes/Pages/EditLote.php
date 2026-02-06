@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Filament\Resources\Lotes\Pages;
+
+use App\Filament\Resources\Lotes\LoteResource;
+use Filament\Actions\DeleteAction;
+use Filament\Resources\Pages\EditRecord;
+
+class EditLote extends EditRecord
+{
+    protected static string $resource = LoteResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            DeleteAction::make(),
+        ];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
+}

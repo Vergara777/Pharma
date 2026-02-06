@@ -17,9 +17,48 @@ class Product extends Model
     
     protected $appends = ['image_url'];
     
+    protected $fillable = [
+        'display_no',
+        'sku',
+        'name',
+        'description',
+        'image',
+        'price',
+        'stock',
+        'shelf',
+        'row',
+        'position',
+        'expires_at',
+        'status',
+        'category_id',
+        'supplier_id',
+        'cost',
+        'min_stock',
+        'max_stock',
+        'unit_name',
+        'package_name',
+        'units_per_package',
+        'price_unit',
+        'price_package',
+    ];
+    
+    protected $casts = [
+        'price' => 'decimal:2',
+        'cost' => 'decimal:2',
+        'stock' => 'integer',
+        'min_stock' => 'integer',
+        'max_stock' => 'integer',
+        'display_no' => 'integer',
+        'units_per_package' => 'integer',
+        'expires_at' => 'date',
+    ];
+    
     protected $attributes = [
-        'stock_minimum' => 20,
-        'stock_maximum' => 500,
+        'min_stock' => 5,
+        'max_stock' => 100,
+        'status' => 'active',
+        'unit_name' => 'unidad',
+        'units_per_package' => 1,
     ];
     
     /**
@@ -41,19 +80,110 @@ class Product extends Model
     }
     
     /**
-     * Set stock minimum with default value
+     * Verificar si el producto está activo
      */
-    public function setStockMinimumAttribute($value)
+    public function isActive(): bool
     {
-        $this->attributes['stock_minimum'] = $value ?? 20;
+        return $this->status === 'active';
     }
     
     /**
-     * Set stock maximum with default value
+     * Verificar si el producto está retirado
      */
-    public function setStockMaximumAttribute($value)
+    public function isRetired(): bool
     {
-        $this->attributes['stock_maximum'] = $value ?? 500;
+        return $this->status === 'retired';
+    }
+    
+    /**
+     * Verificar si el producto está por vencer (30 días)
+     */
+    public function isExpiringSoon(): bool
+    {
+        if (!$this->expires_at) {
+            return false;
+        }
+        
+        return $this->expires_at->diffInDays(now()) <= 30 && $this->expires_at->isFuture();
+    }
+    
+    /**
+     * Verificar si el producto está vencido
+     */
+    public function isExpired(): bool
+    {
+        if (!$this->expires_at) {
+            return false;
+        }
+        
+        return $this->expires_at->isPast();
+    }
+    
+    /**
+     * Verificar si el stock está bajo
+     */
+    public function isLowStock(): bool
+    {
+        return $this->stock <= $this->min_stock;
+    }
+    
+    /**
+     * Calcular precio por unidad si se vende por presentación
+     */
+    public function getPricePerUnitAttribute()
+    {
+        if ($this->price_unit) {
+            return $this->price_unit;
+        }
+        
+        if ($this->price_package && $this->units_per_package > 0) {
+            return $this->price_package / $this->units_per_package;
+        }
+        
+        return $this->price;
+    }
+    
+    /**
+     * Scope para productos activos
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+    
+    /**
+     * Scope para productos retirados
+     */
+    public function scopeRetired($query)
+    {
+        return $query->where('status', 'retired');
+    }
+    
+    /**
+     * Scope para productos con stock bajo
+     */
+    public function scopeLowStock($query)
+    {
+        return $query->whereColumn('stock', '<=', 'min_stock');
+    }
+    
+    /**
+     * Scope para productos por vencer
+     */
+    public function scopeExpiringSoon($query, $days = 30)
+    {
+        return $query->whereNotNull('expires_at')
+                    ->whereDate('expires_at', '>', now())
+                    ->whereDate('expires_at', '<=', now()->addDays($days));
+    }
+    
+    /**
+     * Scope para productos vencidos
+     */
+    public function scopeExpired($query)
+    {
+        return $query->whereNotNull('expires_at')
+                    ->whereDate('expires_at', '<', now());
     }
     
     protected static function booted()
@@ -73,7 +203,7 @@ class Product extends Model
 
         static::saved(function ($product) {
             // Verificar stock después de guardar
-            if ($product->wasChanged('stock') || $product->wasChanged('expiration_date')) {
+            if ($product->wasChanged('stock') || $product->wasChanged('expires_at')) {
                 LowStockNotification::checkProduct($product);
             }
         });

@@ -24,44 +24,52 @@ class EditProduct extends EditRecord
     {
         $product = $this->record;
 
+        // Notificación de stock excedido
+        if ($product->stock > $product->max_stock) {
+            $excess = $product->stock - $product->max_stock;
+            Notification::make()
+                ->title('ℹ️ Stock Excedido')
+                ->body("El producto '{$product->name}' excede el stock máximo por {$excess} unidades. Stock actual: {$product->stock}, Máximo: {$product->max_stock}")
+                ->info()
+                ->icon('heroicon-o-information-circle')
+                ->duration(6000)
+                ->send();
+        }
         // Notificación de stock agotado
-        if ($product->stock == 0) {
+        elseif ($product->stock == 0) {
             Notification::make()
                 ->title('⚠️ Producto Sin Stock')
                 ->body("El producto '{$product->name}' se ha agotado completamente.")
                 ->danger()
                 ->icon('heroicon-o-x-circle')
-                ->iconColor('danger')
                 ->duration(8000)
                 ->send();
         }
         // Notificación de stock bajo
-        elseif ($product->stock <= $product->stock_minimum) {
+        elseif ($product->stock <= $product->min_stock) {
             Notification::make()
                 ->title('⚠️ Stock Bajo')
-                ->body("El producto '{$product->name}' tiene stock bajo ({$product->stock} unidades). Mínimo requerido: {$product->stock_minimum}")
+                ->body("El producto '{$product->name}' tiene stock bajo ({$product->stock} unidades). Mínimo requerido: {$product->min_stock}")
                 ->warning()
                 ->icon('heroicon-o-exclamation-triangle')
-                ->iconColor('warning')
                 ->duration(6000)
                 ->send();
         }
 
         // Notificación de producto vencido
-        if ($product->expiration_date && $product->expiration_date->isPast()) {
-            $daysExpired = now()->diffInDays($product->expiration_date);
+        if ($product->expires_at && $product->expires_at->isPast()) {
+            $daysExpired = now()->diffInDays($product->expires_at);
             Notification::make()
                 ->title('🚫 Producto Vencido')
                 ->body("El producto '{$product->name}' está vencido desde hace {$daysExpired} días.")
                 ->danger()
                 ->icon('heroicon-o-calendar-x')
-                ->iconColor('danger')
                 ->duration(8000)
                 ->send();
         }
         // Notificación de producto próximo a vencer
-        elseif ($product->expiration_date) {
-            $daysUntilExpiration = now()->diffInDays($product->expiration_date, false);
+        elseif ($product->expires_at) {
+            $daysUntilExpiration = now()->diffInDays($product->expires_at, false);
             $alertDays = \Illuminate\Support\Facades\Cache::get('settings.expiration_alert_days', 30);
 
             if ($daysUntilExpiration >= 0 && $daysUntilExpiration <= $alertDays) {
@@ -70,7 +78,6 @@ class EditProduct extends EditRecord
                     ->body("El producto '{$product->name}' vence en {$daysUntilExpiration} días.")
                     ->warning()
                     ->icon('heroicon-o-calendar')
-                    ->iconColor('warning')
                     ->duration(6000)
                     ->send();
             }

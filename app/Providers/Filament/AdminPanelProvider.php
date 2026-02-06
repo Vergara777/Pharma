@@ -38,8 +38,12 @@ class AdminPanelProvider extends PanelProvider
 
     public function panel(Panel $panel): Panel
     {
-        // Obtener configuración guardada
-        $pharmacyName = \Illuminate\Support\Facades\Cache::get('settings.pharmacy_name', config('app.name'));
+        // Obtener configuración desde la base de datos
+        try {
+            $pharmacyName = \App\Models\Setting::get('pharmacy_name', config('app.name'));
+        } catch (\Exception $e) {
+            $pharmacyName = config('app.name');
+        }
 
         return $panel
             ->default()
@@ -52,11 +56,19 @@ class AdminPanelProvider extends PanelProvider
             ->darkMode(true)  // Habilitar selector de modo oscuro
             ->renderHook(
                 'panels::body.end',
+                fn() => view('filament.hooks.money-input-format')
+            )
+            ->renderHook(
+                'panels::body.end',
                 fn() => view('filament.hooks.avatar-refresh')
             )
             ->renderHook(
                 'panels::body.end',
                 fn() => view('filament.hooks.money-format')
+            )
+            ->renderHook(
+                'panels::body.end',
+                fn() => view('filament.hooks.currency-format')
             )
             ->renderHook(
                 'panels::styles.before',
@@ -82,35 +94,28 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->errorNotifications()
             ->databaseNotifications()
-            ->databaseNotificationsPolling('30s')
+            ->databaseNotificationsPolling('60s')
             ->icons([
                 'notifications::database-notifications-trigger' => 'heroicon-o-bell',
             ])
-            ->colors([
-                'danger' => Color::Amber,
-            ])
-            ->Font('Poppins')
+            ->font('Poppins')
             ->login()
-            ->Colors([
+            ->colors([
+                'primary' => Color::Amber,
                 'danger' => Color::Red,
             ])
-            // ->renderHook(
-            //     'panels::auth.login.form.before',
-            //     fn() => view('filament.login-extra'),
-            // )
             ->sidebarWidth('20rem')
             ->navigationGroups([
-                NavigationGroup::make('Shop')
-                    ->icon('heroicon-o-shopping-bag'),
-                NavigationGroup::make('Blog')
-                    ->icon('heroicon-o-document-text'),
-            ])
-            ->colors([
-                'primary' => Color::Green,
+                NavigationGroup::make('Configuración')
+                    ->icon('heroicon-o-cog-6-tooth')
+                    ->collapsible(),
             ])
             ->registration(false)
             ->passwordReset()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
+            ->resources([
+                \App\Filament\Resources\CashSessionResource::class,
+            ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
                 Dashboard::class,

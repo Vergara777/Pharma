@@ -20,7 +20,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-
+        // Registrar observers
+        \App\Models\Lote::observe(\App\Observers\LoteObserver::class);
+        
         // Restaurar inventario cuando el usuario cierre sesión
         \Illuminate\Support\Facades\Event::listen(
             \Illuminate\Auth\Events\Logout::class,

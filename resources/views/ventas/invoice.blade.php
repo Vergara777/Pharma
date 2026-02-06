@@ -197,18 +197,23 @@
     <div class="ticket">
         <!-- Header -->
         <div class="header">
-            <h1>{{ $venta->APP_NAME }}</h1>
-            <p>NIT: {{ $venta->empresa_nit }}</p>
-            <p>Dirección: {{ $venta->empresa_address }}</p>
-            <p>Tel: {{ $venta->empresa_phone }}</p>
-            <p>Email: [EMAIL_ADDRESS]</p>
+            <h1>{{ setting('pharmacy_name', config('app.name')) }}</h1>
+            @if(setting('pharmacy_address'))
+            <p>{{ setting('pharmacy_address') }}</p>
+            @endif
+            @if(setting('pharmacy_phone'))
+            <p>Tel: {{ setting('pharmacy_phone') }}</p>
+            @endif
+            @if(setting('pharmacy_email'))
+            <p>Email: {{ setting('pharmacy_email') }}</p>
+            @endif
         </div>
         
         <!-- Invoice Info -->
         <div class="invoice-info">
             <p><strong>Factura:</strong> {{ $venta->invoice_number }}</p>
-            <p><strong>Fecha:</strong> {{ $venta->created_at->format('d/m/Y H:i') }}</p>
-            <p><strong>Vendedor:</strong> {{ $venta->user_name }}</p>
+            <p><strong>Fecha:</strong> {{ $venta->created_at->format('d/m/Y h:i A') }}</p>
+            <p><strong>Vendedor:</strong> {{ $venta->user->name ?? 'N/A' }}</p>
         </div>
         
         <!-- Customer Info -->
@@ -302,7 +307,7 @@
         <div class="footer">
             <p>¡Gracias por su compra!</p>
             <p>Esta es su factura de venta</p>
-            <p>{{ now()->format('d/m/Y H:i:s') }}</p>
+            <p>{{ now()->format('d/m/Y h:i:s A') }}</p>
         </div>
     </div>
     

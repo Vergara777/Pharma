@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Cache;
 
 class StatsOverviewWidget extends BaseWidget
 {
-    protected static ?int $sort = 1;
+    protected static ?int $sort = 4;
 
     protected function getStats(): array
     {
@@ -29,9 +29,18 @@ class StatsOverviewWidget extends BaseWidget
             ->selectRaw('SUM(price * stock) as total')
             ->value('total') ?? 0;
         
+        // Calcular costo total del inventario
+        $totalInventoryCost = Product::query()
+            ->selectRaw('SUM(cost * stock) as total')
+            ->value('total') ?? 0;
+        
+        // Calcular ganancia potencial del inventario
+        $potentialProfit = $totalInventoryValue - $totalInventoryCost;
+        $profitMargin = $totalInventoryCost > 0 ? (($potentialProfit / $totalInventoryCost) * 100) : 0;
+        
         // Contar productos con stock bajo
         $lowStockCount = Product::query()
-            ->whereColumn('stock', '<=', 'stock_minimum')
+            ->whereColumn('stock', '<=', 'min_stock')
             ->where('stock', '>', 0)
             ->count();
         
@@ -41,15 +50,15 @@ class StatsOverviewWidget extends BaseWidget
         // Productos próximos a vencer
         $expirationAlertDays = Cache::get('settings.expiration_alert_days', 30);
         $expiringProducts = Product::query()
-            ->whereNotNull('expiration_date')
-            ->whereDate('expiration_date', '<=', now()->addDays($expirationAlertDays))
-            ->whereDate('expiration_date', '>=', now())
+            ->whereNotNull('expires_at')
+            ->whereDate('expires_at', '<=', now()->addDays($expirationAlertDays))
+            ->whereDate('expires_at', '>=', now())
             ->count();
 
         // Productos vencidos
         $expiredProducts = Product::query()
-            ->whereNotNull('expiration_date')
-            ->whereDate('expiration_date', '<', now())
+            ->whereNotNull('expires_at')
+            ->whereDate('expires_at', '<', now())
             ->count();
 
         return [
@@ -58,11 +67,6 @@ class StatsOverviewWidget extends BaseWidget
                 ->descriptionIcon('heroicon-o-cube')
                 ->color('primary')
                 ->url(route('filament.admin.resources.products.index')),
-            
-            Stat::make('Valor Inventario', $currency . ' ' . number_format($totalInventoryValue, 0, ',', '.'))
-                ->description('Valor total en stock')
-                ->descriptionIcon('heroicon-o-currency-dollar')
-                ->color('success'),
             
             Stat::make('Stock Bajo', number_format($lowStockCount))
                 ->description('Requieren reabastecimiento')

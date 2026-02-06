@@ -7,7 +7,7 @@ use Filament\Widgets\ChartWidget;
 
 class ProductsByCategoryChart extends ChartWidget
 {
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 6;
 
     public function getHeading(): ?string
     {

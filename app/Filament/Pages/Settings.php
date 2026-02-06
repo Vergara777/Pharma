@@ -15,6 +15,7 @@ use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Cache;
 use BackedEnum;
+use UnitEnum;
 
 class Settings extends Page implements HasForms
 {
@@ -22,11 +23,13 @@ class Settings extends Page implements HasForms
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
-    protected static ?string $navigationLabel = 'Configuración';
+    protected static ?string $navigationLabel = 'Configuración General';
 
     protected static ?string $title = 'Configuración del Sistema';
 
-    protected static ?int $navigationSort = 99;
+    protected static ?int $navigationSort = 7;
+
+    protected static UnitEnum|string|null $navigationGroup = 'Configuración';
 
     public ?array $data = [];
     
@@ -35,15 +38,15 @@ class Settings extends Page implements HasForms
     public function mount(): void
     {
         $this->form->fill([
-            'pharmacy_name' => Cache::get('settings.pharmacy_name', config('app.name')),
-            'pharmacy_address' => Cache::get('settings.pharmacy_address', ''),
-            'pharmacy_phone' => Cache::get('settings.pharmacy_phone', ''),
-            'pharmacy_email' => Cache::get('settings.pharmacy_email', ''),
-            'low_stock_alert' => Cache::get('settings.low_stock_alert', true),
-            'default_stock_minimum' => Cache::get('settings.default_stock_minimum', 20),
-            'currency' => Cache::get('settings.currency', 'COP'),
-            'expiration_alert' => Cache::get('settings.expiration_alert', true),
-            'expiration_alert_days' => Cache::get('settings.expiration_alert_days', 30),
+            'pharmacy_name' => \App\Models\Setting::get('pharmacy_name', config('app.name')),
+            'pharmacy_address' => \App\Models\Setting::get('pharmacy_address', ''),
+            'pharmacy_phone' => \App\Models\Setting::get('pharmacy_phone', ''),
+            'pharmacy_email' => \App\Models\Setting::get('pharmacy_email', ''),
+            'low_stock_alert' => \App\Models\Setting::get('low_stock_alert', true),
+            'default_stock_minimum' => \App\Models\Setting::get('default_stock_minimum', 20),
+            'currency' => \App\Models\Setting::get('currency', 'COP'),
+            'expiration_alert' => \App\Models\Setting::get('expiration_alert', true),
+            'expiration_alert_days' => \App\Models\Setting::get('expiration_alert_days', 30),
         ]);
     }
 
@@ -138,16 +141,16 @@ class Settings extends Page implements HasForms
     {
         $data = $this->form->getState();
 
-        // Guardar en caché (en producción, considera usar una tabla de configuración)
-        Cache::forever('settings.pharmacy_name', $data['pharmacy_name'] ?? config('app.name'));
-        Cache::forever('settings.pharmacy_address', $data['pharmacy_address'] ?? '');
-        Cache::forever('settings.pharmacy_phone', $data['pharmacy_phone'] ?? '');
-        Cache::forever('settings.pharmacy_email', $data['pharmacy_email'] ?? '');
-        Cache::forever('settings.low_stock_alert', $data['low_stock_alert'] ?? true);
-        Cache::forever('settings.default_stock_minimum', $data['default_stock_minimum'] ?? 20);
-        Cache::forever('settings.currency', $data['currency'] ?? 'COP');
-        Cache::forever('settings.expiration_alert', $data['expiration_alert'] ?? true);
-        Cache::forever('settings.expiration_alert_days', $data['expiration_alert_days'] ?? 30);
+        // Guardar en base de datos
+        \App\Models\Setting::set('pharmacy_name', $data['pharmacy_name'] ?? config('app.name'), 'string');
+        \App\Models\Setting::set('pharmacy_address', $data['pharmacy_address'] ?? '', 'string');
+        \App\Models\Setting::set('pharmacy_phone', $data['pharmacy_phone'] ?? '', 'string');
+        \App\Models\Setting::set('pharmacy_email', $data['pharmacy_email'] ?? '', 'string');
+        \App\Models\Setting::set('low_stock_alert', $data['low_stock_alert'] ?? true, 'boolean');
+        \App\Models\Setting::set('default_stock_minimum', $data['default_stock_minimum'] ?? 20, 'integer');
+        \App\Models\Setting::set('currency', $data['currency'] ?? 'COP', 'string');
+        \App\Models\Setting::set('expiration_alert', $data['expiration_alert'] ?? true, 'boolean');
+        \App\Models\Setting::set('expiration_alert_days', $data['expiration_alert_days'] ?? 30, 'integer');
 
         Notification::make()
             ->title('Configuración guardada')

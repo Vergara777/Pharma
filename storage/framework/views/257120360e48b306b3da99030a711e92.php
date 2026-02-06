@@ -168,6 +168,7 @@
                                     event.target.querySelector('[name=customer_document]').value = window.Livewire.find('<?php echo e($_instance->getId()); ?>').customerDocument;
                                     event.target.querySelector('[name=customer_address]').value = window.Livewire.find('<?php echo e($_instance->getId()); ?>').customerAddress;
                                     event.target.querySelector('[name=generate_invoice]').value = window.Livewire.find('<?php echo e($_instance->getId()); ?>').generateInvoice ? '1' : '0';
+                                    event.target.querySelector('[name=invoice_type]').value = window.Livewire.find('<?php echo e($_instance->getId()); ?>').invoiceType;
                                 }
                             }"
                             @submit="submitForm"
@@ -183,6 +184,7 @@
                             <input type="hidden" name="customer_document" value="">
                             <input type="hidden" name="customer_address" value="">
                             <input type="hidden" name="generate_invoice" value="">
+                            <input type="hidden" name="invoice_type" value="">
                             
                             <!-- Método de pago -->
                             <div>
@@ -265,27 +267,44 @@
                                 </div>
                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-                            <!-- Toggle para capturar datos del cliente -->
-                            <div style="padding: 1rem; background-color: #f9fafb; border-radius: 0.5rem; border: 1px solid #e5e7eb;" class="dark:bg-gray-800 dark:border-gray-700">
-                                <div style="display: flex; align-items: center; justify-content: space-between;">
-                                    <span style="font-size: 0.875rem; font-weight: 500; color: #374151;" class="dark:text-gray-300">
-                                        Registrar datos del cliente
-                                    </span>
-                                    <button 
-                                        type="button"
-                                        wire:click="$toggle('captureCustomerData')"
-                                        style="position: relative; display: inline-flex; height: 1.5rem; width: 2.75rem; align-items: center; border-radius: 9999px; transition: background-color 0.2s; outline: none; background-color: <?php echo e($captureCustomerData ? '#f59e0b' : '#d1d5db'); ?>;"
-                                        class="<?php echo e($captureCustomerData ? '' : 'dark:bg-gray-700'); ?>"
-                                    >
-                                        <span 
-                                            style="display: inline-block; height: 1rem; width: 1rem; border-radius: 9999px; background-color: white; transition: transform 0.2s; transform: translateX(<?php echo e($captureCustomerData ? '1.5rem' : '0.25rem'); ?>);"
-                                        ></span>
-                                    </button>
+                            <!-- Opciones de Factura/Ticket -->
+                            <div style="padding: 1rem; background-color: white; border-radius: 0.5rem; border: 1px solid #e5e7eb;" class="dark:bg-gray-800 dark:border-gray-700">
+                                <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.75rem;" class="dark:text-gray-300">
+                                    Factura / Ticket
+                                </label>
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <label style="display: flex; align-items: center; padding: 0.75rem; border: 2px solid; border-radius: 0.5rem; cursor: pointer; transition: all 0.15s; border-color: <?php echo e($invoiceType === 'none' ? '#f59e0b' : '#e5e7eb'); ?>; background-color: <?php echo e($invoiceType === 'none' ? '#fef3c7' : 'transparent'); ?>;" class="<?php echo e($invoiceType === 'none' ? '' : 'dark:border-gray-700 hover:border-gray-300'); ?>">
+                                        <input 
+                                            type="radio" 
+                                            wire:model.live="invoiceType" 
+                                            value="none"
+                                            style="width: 1rem; height: 1rem; color: #f59e0b;"
+                                        >
+                                        <span style="margin-left: 0.75rem; font-size: 0.875rem; font-weight: 500; color: #111827;" class="dark:text-white">No generar factura</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; padding: 0.75rem; border: 2px solid; border-radius: 0.5rem; cursor: pointer; transition: all 0.15s; border-color: <?php echo e($invoiceType === 'without_data' ? '#f59e0b' : '#e5e7eb'); ?>; background-color: <?php echo e($invoiceType === 'without_data' ? '#fef3c7' : 'transparent'); ?>;" class="<?php echo e($invoiceType === 'without_data' ? '' : 'dark:border-gray-700 hover:border-gray-300'); ?>">
+                                        <input 
+                                            type="radio" 
+                                            wire:model.live="invoiceType" 
+                                            value="without_data"
+                                            style="width: 1rem; height: 1rem; color: #f59e0b;"
+                                        >
+                                        <span style="margin-left: 0.75rem; font-size: 0.875rem; font-weight: 500; color: #111827;" class="dark:text-white">Generar ticket sin datos del cliente</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; padding: 0.75rem; border: 2px solid; border-radius: 0.5rem; cursor: pointer; transition: all 0.15s; border-color: <?php echo e($invoiceType === 'with_data' ? '#f59e0b' : '#e5e7eb'); ?>; background-color: <?php echo e($invoiceType === 'with_data' ? '#fef3c7' : 'transparent'); ?>;" class="<?php echo e($invoiceType === 'with_data' ? '' : 'dark:border-gray-700 hover:border-gray-300'); ?>">
+                                        <input 
+                                            type="radio" 
+                                            wire:model.live="invoiceType" 
+                                            value="with_data"
+                                            style="width: 1rem; height: 1rem; color: #f59e0b;"
+                                        >
+                                        <span style="margin-left: 0.75rem; font-size: 0.875rem; font-weight: 500; color: #111827;" class="dark:text-white">Generar factura con datos del cliente</span>
+                                    </label>
                                 </div>
                             </div>
 
-                            <!-- Campos del cliente (solo si el toggle está activado) -->
-                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($captureCustomerData): ?>
+                            <!-- Campos del cliente (solo si selecciona factura con datos) -->
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($invoiceType === 'with_data'): ?>
                                 <div style="display: grid; grid-template-columns: 1fr; gap: 1rem; padding: 1rem; background-color: #f9fafb; border-radius: 0.5rem; border: 1px solid #e5e7eb;" class="dark:bg-gray-800 dark:border-gray-700">
                                     <div>
                                         <label style="display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.5rem;" class="dark:text-gray-300">
@@ -353,37 +372,6 @@
                                     </div>
                                 </div>
                             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-
-                            <!-- Toggle para generar factura -->
-                            <div style="padding: 1rem; background-color: #fef3c7; border-radius: 0.5rem; border: 1px solid #fbbf24;" class="dark:bg-yellow-900 dark:border-yellow-700">
-                                <div style="display: flex; align-items: center; justify-content: space-between;">
-                                    <div>
-                                        <span style="font-size: 0.875rem; font-weight: 600; color: #92400e; display: block;" class="dark:text-yellow-200">
-                                            Generar Factura / Ticket
-                                        </span>
-                                        <span style="font-size: 0.75rem; color: #b45309; margin-top: 0.25rem; display: block;" class="dark:text-yellow-300">
-                                            Se usarán los datos del cliente capturados arriba
-                                        </span>
-                                    </div>
-                                    <button 
-                                        type="button"
-                                        wire:click="$toggle('generateInvoice')"
-                                        style="position: relative; display: inline-flex; height: 1.5rem; width: 2.75rem; align-items: center; border-radius: 9999px; transition: background-color 0.2s; outline: none; background-color: <?php echo e($generateInvoice ? '#f59e0b' : '#d1d5db'); ?>;"
-                                        class="<?php echo e($generateInvoice ? '' : 'dark:bg-gray-700'); ?>"
-                                    >
-                                        <span 
-                                            style="display: inline-block; height: 1rem; width: 1rem; border-radius: 9999px; background-color: white; transition: transform 0.2s; transform: translateX(<?php echo e($generateInvoice ? '1.5rem' : '0.25rem'); ?>);"
-                                        ></span>
-                                    </button>
-                                </div>
-                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($generateInvoice && !$captureCustomerData): ?>
-                                    <div style="margin-top: 0.75rem; padding: 0.75rem; background-color: #fef3c7; border-left: 3px solid #f59e0b; border-radius: 0.25rem;">
-                                        <p style="font-size: 0.75rem; color: #92400e; font-weight: 500;" class="dark:text-yellow-200">
-                                            Activa "Registrar datos del cliente" para incluir información en la factura
-                                        </p>
-                                    </div>
-                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                            </div>
                             
                             <!-- Botones de acción -->
                             <div style="display: flex; gap: 0.75rem; padding-top: 0.5rem;">

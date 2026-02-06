@@ -14,7 +14,6 @@ class CartModal extends Component
     public $selectedPaymentMethod = '';
     public $amountReceived = 0;
     public $change = 0;
-    public $captureCustomerData = false;
     public $customerName = '';
     public $customerPhone = '';
     public $customerEmail = '';
@@ -22,6 +21,7 @@ class CartModal extends Component
     public $customerAddress = '';
     public $paymentReference = '';
     public $generateInvoice = false;
+    public $invoiceType = 'none'; // 'none', 'with_data', 'without_data'
 
     protected $listeners = ['cartUpdated' => 'refreshCart', 'openCart' => 'open'];
 
@@ -68,20 +68,18 @@ class CartModal extends Component
         $this->paymentReference = '';
     }
 
-    public function updatedGenerateInvoice()
+    public function updatedInvoiceType()
     {
-        // No necesitamos limpiar nada, solo es un toggle
-    }
-
-    public function updatedCaptureCustomerData()
-    {
-        // Limpiar datos del cliente si se desmarca el checkbox
-        if (!$this->captureCustomerData) {
+        // Si cambia a 'none', limpiar datos del cliente
+        if ($this->invoiceType === 'none') {
             $this->customerName = '';
             $this->customerPhone = '';
             $this->customerEmail = '';
             $this->customerDocument = '';
             $this->customerAddress = '';
+            $this->generateInvoice = false;
+        } else {
+            $this->generateInvoice = true;
         }
     }
 
@@ -181,8 +179,10 @@ class CartModal extends Component
 
     public function open()
     {
+        \Log::info('CartModal open() called');
         $this->refreshCart();
         $this->isOpen = true;
+        \Log::info('isOpen set to true', ['isOpen' => $this->isOpen]);
     }
 
     public function close()

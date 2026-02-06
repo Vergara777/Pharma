@@ -16,70 +16,87 @@ class LowStockAlertWidget extends Widget
 
     public function mount(): void
     {
-        $this->checkLowStock();
+        // Solo verificar una vez por sesión
+        if (!session()->has('low_stock_alert_shown_' . auth()->id())) {
+            $this->checkLowStock();
+            session()->put('low_stock_alert_shown_' . auth()->id(), true);
+        }
     }
 
     protected function checkLowStock(): void
     {
-        $lowStockProducts = Product::query()
-            ->whereColumn('stock', '<=', 'stock_minimum')
-            ->where('stock', '>', 0)
-            ->count();
-
-        $outOfStockProducts = Product::where('stock', 0)->count();
-
-        // Productos próximos a vencer
-        $expirationAlertDays = \Illuminate\Support\Facades\Cache::get('settings.expiration_alert_days', 30);
-        $expiringProducts = Product::query()
-            ->whereNotNull('expiration_date')
-            ->whereDate('expiration_date', '<=', now()->addDays($expirationAlertDays))
-            ->whereDate('expiration_date', '>=', now())
-            ->count();
-
-        // Productos vencidos
-        $expiredProducts = Product::query()
-            ->whereNotNull('expiration_date')
-            ->whereDate('expiration_date', '<', now())
-            ->count();
-
-        // Notificación de stock
-        if ($lowStockProducts > 0 || $outOfStockProducts > 0) {
-            $message = [];
-            
-            if ($outOfStockProducts > 0) {
-                $message[] = "{$outOfStockProducts} producto(s) sin stock";
-            }
-            
-            if ($lowStockProducts > 0) {
-                $message[] = "{$lowStockProducts} producto(s) con stock bajo";
-            }
-
-            Notification::make()
-                ->warning()
-                ->title('⚠️ Alerta de Inventario')
-                ->body(implode(' y ', $message))
-                ->persistent()
-                ->send();
+        // Verificar si las alertas están activadas
+        $lowStockAlertEnabled = setting('low_stock_alert', true);
+        $expirationAlertEnabled = setting('expiration_alert', true);
+        
+        // Si ambas están desactivadas, no mostrar nada
+        if (!$lowStockAlertEnabled && !$expirationAlertEnabled) {
+            return;
         }
 
-        // Notificación de productos vencidos
-        if ($expiredProducts > 0 && \Illuminate\Support\Facades\Cache::get('settings.expiration_alert', true)) {
-            Notification::make()
-                ->danger()
-                ->title('🚨 Productos Vencidos')
-                ->body("{$expiredProducts} producto(s) ya están vencidos")
-                ->persistent()
-                ->send();
+        // Notificación de stock (solo si está activada)
+        if ($lowStockAlertEnabled) {
+            $lowStockProducts = Product::query()
+                ->whereColumn('stock', '<=', 'min_stock')
+                ->where('stock', '>', 0)
+                ->count();
+
+            $outOfStockProducts = Product::where('stock', 0)->count();
+
+            if ($lowStockProducts > 0 || $outOfStockProducts > 0) {
+                $message = [];
+                
+                if ($outOfStockProducts > 0) {
+                    $message[] = "{$outOfStockProducts} producto(s) sin stock";
+                }
+                
+                if ($lowStockProducts > 0) {
+                    $message[] = "{$lowStockProducts} producto(s) con stock bajo";
+                }
+
+                Notification::make()
+                    ->warning()
+                    ->title('⚠️ Alerta de Inventario')
+                    ->body(implode(' y ', $message))
+                    ->persistent()
+                    ->send();
+            }
         }
 
-        // Notificación de productos próximos a vencer
-        if ($expiringProducts > 0 && \Illuminate\Support\Facades\Cache::get('settings.expiration_alert', true)) {
-            Notification::make()
-                ->warning()
-                ->title('📅 Productos Próximos a Vencer')
-                ->body("{$expiringProducts} producto(s) vencen en los próximos {$expirationAlertDays} días")
-                ->persistent()
-                ->send();
+        // Notificaciones de vencimiento (solo si está activada)
+        if ($expirationAlertEnabled) {
+            $expirationAlertDays = setting('expiration_alert_days', 30);
+            
+            $expiringProducts = Product::query()
+                ->whereNotNull('expires_at')
+                ->whereDate('expires_at', '<=', now()->addDays($expirationAlertDays))
+                ->whereDate('expires_at', '>=', now())
+                ->count();
+
+            $expiredProducts = Product::query()
+                ->whereNotNull('expires_at')
+                ->whereDate('expires_at', '<', now())
+                ->count();
+
+            // Notificación de productos vencidos
+            if ($expiredProducts > 0) {
+                Notification::make()
+                    ->danger()
+                    ->title('🚨 Productos Vencidos')
+                    ->body("{$expiredProducts} producto(s) ya están vencidos")
+                    ->persistent()
+                    ->send();
+            }
+
+            // Notificación de productos próximos a vencer
+            if ($expiringProducts > 0) {
+                Notification::make()
+                    ->warning()
+                    ->title('📅 Productos Próximos a Vencer')
+                    ->body("{$expiringProducts} producto(s) vencen en los próximos {$expirationAlertDays} días")
+                    ->persistent()
+                    ->send();
+            }
         }
     }
 }

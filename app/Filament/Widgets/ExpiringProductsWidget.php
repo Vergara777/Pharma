@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Cache;
 
 class ExpiringProductsWidget extends BaseWidget
 {
-    protected static ?int $sort = 4;
+    protected static ?int $sort = 7;
     protected int | string | array $columnSpan = 'full';
 
     public function table(Table $table): Table
@@ -21,12 +21,12 @@ class ExpiringProductsWidget extends BaseWidget
             ->heading('Productos Próximos a Vencer o Vencidos')
             ->query(
                 Product::query()
-                    ->whereNotNull('expiration_date')
+                    ->whereNotNull('expires_at')
                     ->where(function ($query) use ($alertDays) {
-                        $query->whereDate('expiration_date', '<=', now()->addDays($alertDays))
-                              ->orWhereDate('expiration_date', '<', now());
+                        $query->whereDate('expires_at', '<=', now()->addDays($alertDays))
+                              ->orWhereDate('expires_at', '<', now());
                     })
-                    ->orderBy('expiration_date', 'asc')
+                    ->orderBy('expires_at', 'asc')
             )
             ->columns([
                 Tables\Columns\ImageColumn::make('image')
@@ -46,12 +46,12 @@ class ExpiringProductsWidget extends BaseWidget
                     ->badge()
                     ->color('warning')
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('expiration_date')
+                Tables\Columns\TextColumn::make('expires_at')
                     ->label('Fecha de Vencimiento')
                     ->date('d/m/Y')
                     ->badge()
                     ->color(function ($record) {
-                        $daysUntilExpiration = now()->diffInDays($record->expiration_date, false);
+                        $daysUntilExpiration = now()->diffInDays($record->expires_at, false);
                         
                         if ($daysUntilExpiration < 0) {
                             return 'danger';
@@ -64,7 +64,7 @@ class ExpiringProductsWidget extends BaseWidget
                         }
                     })
                     ->description(function ($record) {
-                        $daysUntilExpiration = now()->diffInDays($record->expiration_date, false);
+                        $daysUntilExpiration = now()->diffInDays($record->expires_at, false);
                         
                         if ($daysUntilExpiration < 0) {
                             return 'VENCIDO hace ' . round(abs($daysUntilExpiration)) . ' días';
@@ -81,7 +81,7 @@ class ExpiringProductsWidget extends BaseWidget
                     ->badge()
                     ->color(function ($record) {
                         $stock = $record->stock;
-                        $min = $record->stock_minimum ?? 20;
+                        $min = $record->min_stock ?? 5;
                         
                         if ($stock == 0) {
                             return 'danger';

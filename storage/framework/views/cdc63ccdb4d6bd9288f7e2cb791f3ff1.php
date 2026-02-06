@@ -35,6 +35,23 @@
     background-color: rgba(127, 29, 29, 0.15) !important;
 }
 
+/* Fila de info (azul) - Stock excedido */
+.fi-row-info {
+    background-color: rgb(239 246 255) !important;
+}
+
+.dark .fi-row-info {
+    background-color: rgba(30, 64, 175, 0.1) !important;
+}
+
+.fi-row-info:hover {
+    background-color: rgb(219 234 254) !important;
+}
+
+.dark .fi-row-info:hover {
+    background-color: rgba(30, 64, 175, 0.15) !important;
+}
+
 /* Logo redondito en el header y login */
 .fi-logo img,
 .fi-simple-layout-logo img,
@@ -83,6 +100,27 @@ img[class*="brand-logo"] {
 
 .dark .fi-modal-heading .fi-badge {
     background-color: rgb(220 38 38) !important;
+}
+
+/* Forzar botones de submit/guardar a color primary (verde) */
+.fi-modal-footer-actions button[type="submit"],
+.fi-form-actions button[type="submit"],
+button[wire\:click*="save"],
+button[wire\:click*="create"] {
+    --c-400: var(--primary-400) !important;
+    --c-500: var(--primary-500) !important;
+    --c-600: var(--primary-600) !important;
+}
+
+/* Buscador de tabla más ancho */
+.fi-ta-search-field {
+    min-width: 500px !important;
+}
+
+@media (max-width: 768px) {
+    .fi-ta-search-field {
+        min-width: 100% !important;
+    }
 }
 </style>
 <?php /**PATH C:\Pharma\resources\views/filament/hooks/custom-styles.blade.php ENDPATH**/ ?>

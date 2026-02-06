@@ -197,18 +197,23 @@
     <div class="ticket">
         <!-- Header -->
         <div class="header">
-            <h1><?php echo e($venta->empresa_name); ?></h1>
-            <p>NIT: <?php echo e($venta->empresa_nit); ?></p>
-            <p>Dirección: <?php echo e($venta->empresa_address); ?></p>
-            <p>Tel: <?php echo e($venta->empresa_phone); ?></p>
-            <p>Email: [EMAIL_ADDRESS]</p>
+            <h1><?php echo e(setting('pharmacy_name', config('app.name'))); ?></h1>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(setting('pharmacy_address')): ?>
+            <p><?php echo e(setting('pharmacy_address')); ?></p>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(setting('pharmacy_phone')): ?>
+            <p>Tel: <?php echo e(setting('pharmacy_phone')); ?></p>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(setting('pharmacy_email')): ?>
+            <p>Email: <?php echo e(setting('pharmacy_email')); ?></p>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         </div>
         
         <!-- Invoice Info -->
         <div class="invoice-info">
             <p><strong>Factura:</strong> <?php echo e($venta->invoice_number); ?></p>
-            <p><strong>Fecha:</strong> <?php echo e($venta->created_at->format('d/m/Y H:i')); ?></p>
-            <p><strong>Vendedor:</strong> <?php echo e($venta->user_name); ?></p>
+            <p><strong>Fecha:</strong> <?php echo e($venta->created_at->format('d/m/Y h:i A')); ?></p>
+            <p><strong>Vendedor:</strong> <?php echo e($venta->user->name ?? 'N/A'); ?></p>
         </div>
         
         <!-- Customer Info -->
@@ -302,7 +307,7 @@
         <div class="footer">
             <p>¡Gracias por su compra!</p>
             <p>Esta es su factura de venta</p>
-            <p><?php echo e(now()->format('d/m/Y H:i:s')); ?></p>
+            <p><?php echo e(now()->format('d/m/Y h:i:s A')); ?></p>
         </div>
     </div>
     

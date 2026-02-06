@@ -56,7 +56,7 @@ class ListProducts extends ListRecords
         $filter = request()->query('filter');
         
         if ($filter === 'low_stock') {
-            return $query->whereColumn('stock', '<=', 'stock_minimum')->where('stock', '>', 0);
+            return $query->whereColumn('stock', '<=', 'min_stock')->where('stock', '>', 0);
         }
         
         if ($filter === 'out_of_stock') {
@@ -65,14 +65,14 @@ class ListProducts extends ListRecords
         
         if ($filter === 'expiring_soon') {
             $alertDays = \Illuminate\Support\Facades\Cache::get('settings.expiration_alert_days', 30);
-            return $query->whereNotNull('expiration_date')
-                ->whereDate('expiration_date', '<=', now()->addDays($alertDays))
-                ->whereDate('expiration_date', '>=', now());
+            return $query->whereNotNull('expires_at')
+                ->whereDate('expires_at', '<=', now()->addDays($alertDays))
+                ->whereDate('expires_at', '>=', now());
         }
         
         if ($filter === 'expired') {
-            return $query->whereNotNull('expiration_date')
-                ->whereDate('expiration_date', '<', now());
+            return $query->whereNotNull('expires_at')
+                ->whereDate('expires_at', '<', now());
         }
         
         return $query;

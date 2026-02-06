@@ -12,7 +12,7 @@ use Filament\Tables\Actions\Action;
 
 class LowStockProductsWidget extends BaseWidget
 {
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 5;
     
     protected int | string | array $columnSpan = 'full';
 
@@ -22,7 +22,7 @@ class LowStockProductsWidget extends BaseWidget
             ->heading('⚠️ Productos con Stock Bajo')
             ->query(
                 Product::query()
-                    ->whereColumn('stock', '<=', 'stock_minimum')
+                    ->whereColumn('stock', '<=', 'min_stock')
                     ->where('stock', '>', 0)
                     ->orderBy('stock', 'asc')
                     ->limit(10)
@@ -48,7 +48,7 @@ class LowStockProductsWidget extends BaseWidget
                     ->suffix(' unidades')
                     ->toggleable(),
                 
-                TextColumn::make('stock_minimum')
+                TextColumn::make('min_stock')
                     ->label('Stock Mínimo')
                     ->suffix(' unidades')
                     ->toggleable(),

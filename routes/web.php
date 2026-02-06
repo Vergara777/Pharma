@@ -3,6 +3,7 @@
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Api\BarcodeController;
+use App\Http\Controllers\LoteDocumentController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -22,6 +23,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/cart/finalize', [CartController::class, 'finalize'])->name('cart.finalize');
     Route::get('/admin/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
     Route::get('/admin/ventas/{venta}/invoice', [CartController::class, 'showInvoice'])->name('ventas.invoice');
+    
+    // Ruta para ver documentos de lotes
+    Route::get('/admin/lotes/{lote}/documento', [LoteDocumentController::class, 'show'])->name('lotes.documento');
 });
 
 Route::middleware([

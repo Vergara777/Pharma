@@ -135,6 +135,21 @@ class ShoppingCart extends Component
             return;
         }
 
+        // Verificar si hay una caja abierta
+        $openSession = \App\Models\CashSession::where('user_id', auth()->id())
+            ->where('status', 'open')
+            ->first();
+        
+        if (!$openSession) {
+            Notification::make()
+                ->title('Caja Cerrada')
+                ->body('Debes abrir una caja antes de realizar ventas')
+                ->danger()
+                ->duration(5000)
+                ->send();
+            return;
+        }
+
         try {
             foreach ($this->cart as $item) {
                 $product = Product::find($item['product_id']);
@@ -148,8 +163,8 @@ class ShoppingCart extends Component
                     return;
                 }
 
-                // Crear venta
-                Ventas::create([
+                // Crear venta asociada a la sesión de caja
+                $ventaData = [
                     'product_id' => $item['product_id'],
                     'qty' => $item['quantity'],
                     'unit_price' => $item['price'],
@@ -159,8 +174,11 @@ class ShoppingCart extends Component
                     'payment_method_id' => $this->paymentMethodId,
                     'user_id' => auth()->id(),
                     'user_name' => auth()->user()->name,
+                    'cash_session_id' => $openSession->id,
                     'status' => 'active',
-                ]);
+                ];
+                
+                Ventas::create($ventaData);
 
                 // Reducir stock
                 $product->decrement('stock', $item['quantity']);
