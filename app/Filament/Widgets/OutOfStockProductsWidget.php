@@ -27,6 +27,12 @@ class OutOfStockProductsWidget extends BaseWidget
                     ->limit(10)
             )
             ->columns([
+                ImageColumn::make('image')
+                    ->label('')
+                    ->circular()
+                    ->size(40)
+                    ->toggleable(),
+
                 TextColumn::make('name')
                     ->label('Producto')
                     ->searchable()

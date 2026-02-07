@@ -16,11 +16,9 @@ class LowStockAlertWidget extends Widget
 
     public function mount(): void
     {
-        // Solo verificar una vez por sesión
-        if (!session()->has('low_stock_alert_shown_' . auth()->id())) {
-            $this->checkLowStock();
-            session()->put('low_stock_alert_shown_' . auth()->id(), true);
-        }
+        // El sistema de notificaciones globales ya maneja los toasts.
+        // Este widget puede usarse para mostrar información visual en el dashboard
+        // si se requiere, pero no debe disparar notificaciones duplicadas.
     }
 
     protected function checkLowStock(): void

@@ -8,6 +8,8 @@ use Filament\Widgets\ChartWidget;
 class ProductsByCategoryChart extends ChartWidget
 {
     protected static ?int $sort = 6;
+    
+    protected int | string | array $columnSpan = 1;
 
     public function getHeading(): ?string
     {

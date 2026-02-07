@@ -5,7 +5,7 @@ namespace App\Notifications;
 use App\Models\Product;
 use App\Models\User;
 use Filament\Notifications\Notification as FilamentNotification;
-use Filament\Notifications\Actions\Action;
+use Filament\Actions\Action;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Cache;
@@ -29,12 +29,17 @@ class LowStockNotification extends Notification
 
     public function toDatabase($notifiable): array
     {
-        return FilamentNotification::make()
+        $notification = FilamentNotification::make()
             ->title($this->title)
             ->body($this->body)
             ->{$this->type}()
-            ->icon($this->icon)
-            ->getDatabaseMessage();
+            ->icon($this->icon);
+
+        if ($this->actions) {
+            $notification->actions($this->actions);
+        }
+
+        return $notification->getDatabaseMessage();
     }
 
     public function toArray($notifiable): array
@@ -59,83 +64,129 @@ class LowStockNotification extends Notification
             return;
         }
 
-        $admins = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
-        })->get();
+        $admins = User::where('role', 'admin')->get();
 
         if ($admins->isEmpty()) {
             return;
         }
 
-        // Notificación de stock (solo si está activada)
+        $hasAlerts = false;
+        $messageParts = [];
+        $actions = [];
+
+        // Base URL para productos
+        $productsUrl = route('filament.admin.resources.products.index');
+
+        // 1. Recopilar información de stock
         if ($lowStockAlertEnabled) {
-            $lowStockProducts = Product::query()
+            $outOfStockCount = Product::where('stock', 0)->count();
+            $lowStockCount = Product::query()
                 ->whereColumn('stock', '<=', 'min_stock')
                 ->where('stock', '>', 0)
                 ->count();
+            
+            // Productos por agotar (Amarillo)
+            $approachingStockCount = Product::query()
+                ->whereRaw('stock > min_stock AND stock <= (min_stock + 10)')
+                ->count();
 
-            $outOfStockProducts = Product::where('stock', 0)->count();
+            if ($outOfStockCount > 0) {
+                $hasAlerts = true;
+                $messageParts[] = "{$outOfStockCount} sin stock";
+                $actions[] = Action::make('view_out_of_stock')
+                    ->label('Sin Stock')
+                    ->url($productsUrl . '?filter=out_of_stock')
+                    ->button()
+                    ->color('danger');
+            }
 
-            if ($lowStockProducts > 0 || $outOfStockProducts > 0) {
-                $message = [];
-                
-                if ($outOfStockProducts > 0) {
-                    $message[] = "{$outOfStockProducts} producto(s) sin stock";
-                }
-                
-                if ($lowStockProducts > 0) {
-                    $message[] = "{$lowStockProducts} producto(s) con stock bajo";
-                }
+            if ($lowStockCount > 0) {
+                $hasAlerts = true;
+                $messageParts[] = "{$lowStockCount} stock bajo";
+                $actions[] = Action::make('view_low_stock')
+                    ->label('Stock Bajo')
+                    ->url($productsUrl . '?filter=low_stock')
+                    ->button()
+                    ->color('warning');
+            }
 
-                foreach ($admins as $admin) {
-                    $admin->notify(new self(
-                        title: 'Alerta de Inventario',
-                        body: implode(' y ', $message),
-                        type: 'warning',
-                        icon: 'heroicon-o-exclamation-triangle'
-                    ));
-                }
+            if ($approachingStockCount > 0) {
+                $hasAlerts = true;
+                $messageParts[] = "{$approachingStockCount} por agotar";
+                $actions[] = Action::make('view_approaching')
+                    ->label('Por Agotar')
+                    ->url($productsUrl . '?filter=approaching_stock')
+                    ->button()
+                    ->color('warning');
             }
         }
 
-        // Notificaciones de vencimiento (solo si está activada)
+        // 2. Recopilar información de vencimientos
         if ($expirationAlertEnabled) {
             $expirationAlertDays = \App\Models\Setting::get('expiration_alert_days', 30);
             
-            $expiringProducts = Product::query()
+            $expiringCount = Product::query()
                 ->whereNotNull('expires_at')
                 ->whereDate('expires_at', '<=', now()->addDays($expirationAlertDays))
                 ->whereDate('expires_at', '>=', now())
                 ->count();
 
-            $expiredProducts = Product::query()
+            $expiredCount = Product::query()
                 ->whereNotNull('expires_at')
                 ->whereDate('expires_at', '<', now())
                 ->count();
 
-            // Notificación de productos vencidos
-            if ($expiredProducts > 0) {
-                foreach ($admins as $admin) {
-                    $admin->notify(new self(
-                        title: 'Productos Vencidos',
-                        body: "{$expiredProducts} producto(s) ya están vencidos",
-                        type: 'danger',
-                        icon: 'heroicon-o-x-circle'
-                    ));
-                }
+            if ($expiredCount > 0) {
+                $hasAlerts = true;
+                $messageParts[] = "{$expiredCount} vencidos";
+                $actions[] = Action::make('view_expired')
+                    ->label('Vencidos')
+                    ->url($productsUrl . '?filter=expired')
+                    ->button()
+                    ->color('danger');
             }
 
-            // Notificación de productos próximos a vencer
-            if ($expiringProducts > 0) {
-                foreach ($admins as $admin) {
-                    $admin->notify(new self(
-                        title: 'Productos Próximos a Vencer',
-                        body: "{$expiringProducts} producto(s) vencen en los próximos {$expirationAlertDays} días",
-                        type: 'warning',
-                        icon: 'heroicon-o-calendar'
-                    ));
-                }
+            if ($expiringCount > 0) {
+                $hasAlerts = true;
+                $messageParts[] = "{$expiringCount} por vencer";
+                $actions[] = Action::make('view_expiring')
+                    ->label('Por Vencer')
+                    ->url($productsUrl . '?filter=expiring_soon')
+                    ->button()
+                    ->color('warning');
             }
+        }
+
+        // Si no hay alertas, salir
+        if (!$hasAlerts) {
+            return;
+        }
+
+        // --- LÓGICA DE ENVÍO A BASE DE DATOS (CAMPANA) ---
+        $dbCacheKey = 'db_notif_sent_v5_' . auth()->id();
+        if (!\Illuminate\Support\Facades\Cache::has($dbCacheKey)) {
+            foreach ($admins as $admin) {
+                $admin->notify(new self(
+                    title: 'Inventario Crítico',
+                    body: implode(', ', $messageParts),
+                    type: 'danger',
+                    icon: 'heroicon-o-exclamation-circle',
+                    actions: $actions
+                ));
+            }
+            \Illuminate\Support\Facades\Cache::put($dbCacheKey, true, now()->addHour());
+        }
+
+        // --- LÓGICA DE ALERTA VISUAL (TOAST) ---
+        if (auth()->user()?->role === 'admin') {
+            FilamentNotification::make()
+                ->title('⚠️ Alertas de Inventario')
+                ->body('Se detectaron problemas: ' . implode(', ', $messageParts))
+                ->danger()
+                ->icon('heroicon-o-bell-alert')
+                ->duration(30000)
+                ->actions($actions) // Aquí salen todos los botones
+                ->send();
         }
     }
 

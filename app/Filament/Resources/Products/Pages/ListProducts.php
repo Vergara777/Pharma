@@ -23,58 +23,25 @@ class ListProducts extends ListRecords
     public function mount(): void
     {
         parent::mount();
-        
-        // Enviar notificaciones al cargar la página
-        LowStockNotification::send();
+
+        // Sincronizar parámetros de URL con los filtros nativos de Filament
+        // Esto hace que aparezcan los "chips" de filtros activos
+        $filter = request()->query('filter');
+        if ($filter && in_array($filter, ['low_stock', 'out_of_stock', 'approaching_stock', 'expiring_soon', 'expired'])) {
+            $this->tableFilters[$filter] = ['isActive' => true];
+        }
     }
 
     protected function getHeaderActions(): array
     {
-        $actions = [];
-        
         // Solo admins pueden crear
         if (auth()->user()->role === 'admin') {
-            $actions[] = CreateAction::make()
-                ->icon('heroicon-o-plus-circle');
+            return [
+                CreateAction::make()
+                    ->icon('heroicon-o-plus-circle'),
+            ];
         }
 
-        // Si hay un filtro activo, agregar botón para limpiar
-        if (request()->query('filter')) {
-            $actions[] = Action::make('clear_filter')
-                ->label('Ver Todos los Productos')
-                ->icon('heroicon-o-x-mark')
-                ->color('gray')
-                ->url(route('filament.admin.resources.products.index'));
-        }
-
-        return $actions;
-    }
-
-    protected function getTableQuery(): ?Builder
-    {
-        $query = parent::getTableQuery();
-        $filter = request()->query('filter');
-        
-        if ($filter === 'low_stock') {
-            return $query->whereColumn('stock', '<=', 'min_stock')->where('stock', '>', 0);
-        }
-        
-        if ($filter === 'out_of_stock') {
-            return $query->where('stock', 0);
-        }
-        
-        if ($filter === 'expiring_soon') {
-            $alertDays = \Illuminate\Support\Facades\Cache::get('settings.expiration_alert_days', 30);
-            return $query->whereNotNull('expires_at')
-                ->whereDate('expires_at', '<=', now()->addDays($alertDays))
-                ->whereDate('expires_at', '>=', now());
-        }
-        
-        if ($filter === 'expired') {
-            return $query->whereNotNull('expires_at')
-                ->whereDate('expires_at', '<', now());
-        }
-        
-        return $query;
+        return [];
     }
 }

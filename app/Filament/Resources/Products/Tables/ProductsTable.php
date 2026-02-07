@@ -218,6 +218,10 @@ class ProductsTable
                     ->label('Sin Stock')
                     ->query(fn ($query) => $query->where('stock', 0))
                     ->toggle(),
+                Filter::make('approaching_stock')
+                    ->label('Por Agotar')
+                    ->query(fn ($query) => $query->whereRaw('stock > min_stock AND stock <= (min_stock + 10)'))
+                    ->toggle(),
                 Filter::make('overstock')
                     ->label('Stock Excedido')
                     ->query(fn ($query) => $query->whereColumn('stock', '>', 'max_stock'))

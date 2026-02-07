@@ -32,8 +32,12 @@ class AdminPanelProvider extends PanelProvider
 {
     public function boot(): void
     {
-        // Las notificaciones de base de datos se configuran automáticamente
-        // No necesitamos configuración adicional para mostrarlas
+        // Ejecutar verificación de stock y vencimientos de forma global
+        // El método ya tiene su propio cache de 5 min para no saturar
+        \Filament\Support\Facades\FilamentView::registerRenderHook(
+            'panels::body.start',
+            fn() => \App\Notifications\LowStockNotification::send()
+        );
     }
 
     public function panel(Panel $panel): Panel
@@ -82,6 +86,10 @@ class AdminPanelProvider extends PanelProvider
                 'panels::body.end',
                 fn() => view('filament.hooks.barcode-scanner-listener')
             )
+            ->renderHook(
+                'panels::body.end',
+                fn() => view('filament.hooks.page-expiry-handler')
+            )
             ->userMenuItems([
                 'profile' => MenuItem::make()
                     ->label('Mi Perfil')
@@ -92,12 +100,8 @@ class AdminPanelProvider extends PanelProvider
                     ->url(fn(): string => Settings::getUrl())
                     ->icon('heroicon-o-cog-6-tooth'),
             ])
-            ->errorNotifications()
             ->databaseNotifications()
             ->databaseNotificationsPolling('60s')
-            ->icons([
-                'notifications::database-notifications-trigger' => 'heroicon-o-bell',
-            ])
             ->font('Poppins')
             ->login()
             ->colors([

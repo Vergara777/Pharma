@@ -86,16 +86,29 @@ img[class*="brand-logo"] {
 }
 
 /* Badge de notificaciones - Color rojo/danger */
+.fi-no-database-notifications-trigger span,
+.fi-database-notifications-trigger span,
+.fi-topbar-database-notifications-trigger span,
+.fi-icon-btn-badge,
+[aria-label*="notificaciones"] span,
 .fi-badge[data-slot="badge"] {
-    --c-50: var(--danger-50) !important;
-    --c-400: var(--danger-400) !important;
-    --c-600: var(--danger-600) !important;
+    background-color: #ff0000 !important;
+    color: #ffffff !important;
+    --c-50: 254, 242, 242 !important;
+    --c-400: 248, 113, 113 !important;
+    --c-600: 220, 38, 38 !important;
+}
+
+/* Forzar el color de fondo específicamente para el círculo */
+.fi-icon-btn-badge {
+    background-color: #ff0000 !important;
 }
 
 /* Badge en el modal de notificaciones */
-.fi-modal-heading .fi-badge {
-    background-color: rgb(239 68 68) !important;
-    color: white !important;
+.fi-modal-heading .fi-badge,
+.fi-no-database-modal-heading .fi-badge {
+    background-color: #ff0000 !important;
+    color: #ffffff !important;
 }
 
 .dark .fi-modal-heading .fi-badge {
@@ -121,5 +134,33 @@ button[wire\:click*="create"] {
     .fi-ta-search-field {
         min-width: 100% !important;
     }
+}
+/* Acciones de notificación más limpias y sin scroll feo */
+div[class*="notification-actions"],
+.fi-no-notification-actions,
+.fi-no-notification-actions > div {
+    display: flex !important;
+    gap: 0.5rem !important;
+    padding-top: 0.5rem !important;
+    flex-wrap: wrap !important; /* Permitir que bajen si no caben, pero juntos */
+}
+
+.fi-no-notification-actions button,
+.fi-no-notification-actions a {
+    white-space: nowrap !important;
+    padding: 0.3rem 0.6rem !important;
+    font-size: 0.75rem !important;
+    border-radius: 0.375rem !important;
+    border: none !important; /* Quitar cualquier borde blanco/feo */
+    box-shadow: none !important;
+}
+
+/* Ocultar scrollbars si aparecen por casualidad */
+.fi-no-notification-actions::-webkit-scrollbar {
+    display: none !important;
+}
+.fi-no-notification-actions {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
 }
 </style>
