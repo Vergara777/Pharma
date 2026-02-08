@@ -13,10 +13,9 @@ class ListVentas extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            // CreateAction::make()
-            //     ->label('Nueva Venta')
-            //     ->icon('heroicon-o-plus-circle'),
-            // Deshabilitado - usar el carrito para crear ventas
+            CreateAction::make()
+                ->label('Nueva Venta')
+                ->icon('heroicon-o-plus-circle'),
         ];
     }
 }

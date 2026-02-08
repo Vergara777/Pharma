@@ -10,6 +10,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\CreateAction;
 use Filament\Actions\Action as RecordAction;
 use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\Layout\Stack;
@@ -177,25 +178,43 @@ class ProductsTable
                     ->numeric()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('status')
-                    ->label('Estado')
-                    ->badge()
-                    ->icon(fn (string $state): string => match ($state) {
-                        'active' => 'heroicon-o-check-circle',
-                        'retired' => 'heroicon-o-x-circle',
-                    })
-                    ->color(fn (string $state): string => match ($state) {
-                        'active' => 'success',
-                        'retired' => 'danger',
-                    })
-                    ->formatStateUsing(fn (string $state): string => '')
-                    ->tooltip(fn (string $state): string => match ($state) {
-                        'active' => 'Activo',
-                        'retired' => 'Retirado',
-                    })
+                \Filament\Tables\Columns\IconColumn::make('status')
+                    ->label('Activo')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger')
+                    ->getStateUsing(fn ($record) => $record->status === 'active')
                     ->alignment('center')
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->action(
+                        RecordAction::make('toggle_status')
+                            ->label(fn ($record) => $record->status === 'active' ? 'Desactivar Producto' : 'Activar Producto')
+                            ->requiresConfirmation()
+                            ->modalHeading(fn ($record) => $record->status === 'active' ? 'Desactivar Producto' : 'Activar Producto')
+                            ->modalDescription(fn ($record) => $record->status === 'active' 
+                                ? '¿Estás seguro de desactivar este producto? No aparecerá en el sistema hasta que lo actives nuevamente.'
+                                : '¿Estás seguro de activar este producto? Volverá a estar disponible en el sistema.'
+                            )
+                            ->modalSubmitActionLabel(fn ($record) => $record->status === 'active' ? 'Sí, desactivar' : 'Sí, activar')
+                            ->action(function ($record) {
+                                $newStatus = $record->status === 'active' ? 'retired' : 'active';
+                                $record->update(['status' => $newStatus]);
+                                
+                                \Filament\Notifications\Notification::make()
+                                    ->success()
+                                    ->title($newStatus === 'active' ? 'Producto activado' : 'Producto desactivado')
+                                    ->body("El producto {$record->name} fue " . ($newStatus === 'active' ? 'activado' : 'desactivado') . ' exitosamente')
+                                    ->send();
+                            })
+                            ->color(fn ($record) => $record->status === 'active' ? 'danger' : 'success')
+                    )
+                    ->tooltip(fn ($record) => $record->status === 'active' 
+                        ? 'Presiona para desactivar' 
+                        : 'Presiona para activar'
+                    ),
             ])
             ->filters([
                 SelectFilter::make('category_id')
@@ -247,11 +266,81 @@ class ProductsTable
                     ])
                     ->multiple(),
             ])
-            ->recordActions([
+            ->actions([
                 ViewAction::make()
+                    ->modal()
+                    ->modalWidth('3xl')
                     ->color('info'),
                 EditAction::make()
+                    ->modal()
+                    ->modalWidth('3xl')
                     ->color('primary')
+                    ->visible(fn () => auth()->user()->role === 'admin'),
+                RecordAction::make('addToCart')
+                    ->label('Agregar')
+                    ->icon('heroicon-o-shopping-cart')
+                    ->color('success')
+                    ->form([
+                        \Filament\Forms\Components\TextInput::make('quantity')
+                            ->label('Cantidad')
+                            ->numeric()
+                            ->default(1)
+                            ->minValue(1)
+                            ->required()
+                            ->live(),
+                    ])
+                    ->action(function ($record, array $data, $livewire) {
+                        // Verificar si hay una caja abierta
+                        $openSession = \App\Models\CashSession::where('user_id', auth()->id())
+                            ->where('status', 'open')
+                            ->first();
+                        
+                        if (!$openSession) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Caja Cerrada')
+                                ->body('Debes abrir una caja antes de realizar ventas')
+                                ->danger()
+                                ->duration(5000)
+                                ->send();
+                            return;
+                        }
+                        
+                        $quantity = $data['quantity'] ?? 1;
+                        
+                        // Recargar el producto para tener el stock actualizado
+                        $product = \App\Models\Product::find($record->id);
+                        
+                        // Verificar stock disponible
+                        if ($product->stock < $quantity) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Stock insuficiente')
+                                ->body("Solo hay {$product->stock} unidades disponibles")
+                                ->danger()
+                                ->duration(5000)
+                                ->send();
+                            return;
+                        }
+                        
+                        // USAR EL NUEVO SERVICIO DE CARRITO
+                        \App\Services\CartService::add($product, $quantity, 'unit');
+                        
+                        // Disparar eventos para actualizar el badge, modal y tabla
+                        $livewire->dispatch('cartUpdated');
+                        $livewire->dispatch('refreshProducts');
+                        
+                        \Filament\Notifications\Notification::make()
+                            ->title('Producto agregado')
+                            ->body("{$product->name} x{$quantity} agregado al carrito")
+                            ->success()
+                            ->duration(5000)
+                            ->send();
+                    })
+                    ->modalHeading('Agregar al Carrito')
+                    ->modalDescription(fn ($record) => "¿Cuántas unidades de {$record->name} deseas agregar?")
+                    ->modalSubmitActionLabel('Agregar al Carrito')
+                    ->modalWidth('md')
+                    ->visible(fn ($record) => $record->stock > 0 && $record->status === 'active'),
+                DeleteAction::make()
                     ->visible(fn () => auth()->user()->role === 'admin'),
                 RecordAction::make('deactivate')
                     ->label('Desactivar')
@@ -304,98 +393,6 @@ class ProductsTable
                             ->send();
                     })
                     ->visible(fn ($record) => $record->status === 'retired'),
-                RecordAction::make('addToCart')
-                    ->label('Agregar')
-                    ->icon('heroicon-o-shopping-cart')
-                    ->color('success')
-                    ->form([
-                        \Filament\Forms\Components\TextInput::make('quantity')
-                            ->label('Cantidad')
-                            ->numeric()
-                            ->default(1)
-                            ->minValue(1)
-                            ->required()
-                            ->live(),
-                    ])
-                    ->action(function ($record, array $data, $livewire) {
-                        // Verificar si hay una caja abierta
-                        $openSession = \App\Models\CashSession::where('user_id', auth()->id())
-                            ->where('status', 'open')
-                            ->first();
-                        
-                        if (!$openSession) {
-                            \Filament\Notifications\Notification::make()
-                                ->title('Caja Cerrada')
-                                ->body('Debes abrir una caja antes de realizar ventas')
-                                ->danger()
-                                ->duration(5000)
-                                ->send();
-                            return;
-                        }
-                        
-                        $quantity = $data['quantity'] ?? 1;
-                        
-                        // Recargar el producto para tener el stock actualizado
-                        $product = \App\Models\Product::find($record->id);
-                        
-                        // Verificar stock disponible
-                        if ($product->stock < $quantity) {
-                            \Filament\Notifications\Notification::make()
-                                ->title('Stock insuficiente')
-                                ->body("Solo hay {$product->stock} unidades disponibles")
-                                ->danger()
-                                ->duration(5000)
-                                ->send();
-                            return;
-                        }
-                        
-                        $cart = session()->get('cart', []);
-                        $cartKey = $product->id;
-                        
-                        if (isset($cart[$cartKey])) {
-                            // Si ya existe, verificar stock para cantidad adicional
-                            if ($product->stock < $quantity) {
-                                \Filament\Notifications\Notification::make()
-                                    ->title('Stock insuficiente')
-                                    ->body("No hay suficiente stock para agregar más unidades")
-                                    ->danger()
-                                    ->duration(5000)
-                                    ->send();
-                                return;
-                            }
-                            $cart[$cartKey]['quantity'] += $quantity;
-                        } else {
-                            $cart[$cartKey] = [
-                                'product_id' => $product->id,
-                                'name' => $product->name,
-                                'price' => $product->price,
-                                'quantity' => $quantity,
-                            ];
-                        }
-                        
-                        // Descontar del inventario usando update directo
-                        $product->update(['stock' => $product->stock - $quantity]);
-                        
-                        session()->put('cart', $cart);
-                        
-                        // Disparar eventos para actualizar el badge, modal y tabla
-                        $livewire->dispatch('cartUpdated');
-                        $livewire->dispatch('refreshProducts');
-                        
-                        \Filament\Notifications\Notification::make()
-                            ->title('Producto agregado')
-                            ->body("{$product->name} x{$quantity} agregado (Stock actualizado)")
-                            ->success()
-                            ->duration(5000)
-                            ->send();
-                    })
-                    ->modalHeading('Agregar al Carrito')
-                    ->modalDescription(fn ($record) => "¿Cuántas unidades de {$record->name} deseas agregar?")
-                    ->modalSubmitActionLabel('Agregar al Carrito')
-                    ->modalWidth('md')
-                    ->visible(fn ($record) => $record->stock > 0 && $record->status === 'active'),
-                DeleteAction::make()
-                    ->visible(fn () => auth()->user()->role === 'admin'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
@@ -405,6 +402,8 @@ class ProductsTable
             ])
             ->toolbarActions([
                 CreateAction::make()
+                    ->modal()
+                    ->modalWidth('3xl')
                     ->icon('heroicon-o-plus-circle')
                     ->visible(fn () => auth()->user()->role === 'admin'),
                 BulkActionGroup::make([

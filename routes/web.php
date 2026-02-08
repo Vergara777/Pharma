@@ -26,6 +26,11 @@ Route::middleware(['auth'])->group(function () {
     
     // Ruta para ver documentos de lotes
     Route::get('/admin/lotes/{lote}/documento', [LoteDocumentController::class, 'show'])->name('lotes.documento');
+    
+    // Ruta para ver ticket de factura
+    Route::get('/admin/facturas/{factura}/ticket', function (\App\Models\Factura $factura) {
+        return view('facturas.ticket', compact('factura'));
+    })->name('facturas.ticket');
 });
 
 Route::middleware([

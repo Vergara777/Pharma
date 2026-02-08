@@ -74,7 +74,7 @@
                 <!-- Método de pago -->
                 <div class="border-t pt-4 dark:border-gray-700">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Método de Pago
+                        Método de Pago *
                     </label>
                     <select 
                         wire:model="paymentMethodId"
@@ -85,6 +85,25 @@
                             <option value="{{ $method->id }}">{{ $method->name }}</option>
                         @endforeach
                     </select>
+                </div>
+
+                <!-- Cliente (opcional) -->
+                <div class="pt-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Cliente (opcional)
+                    </label>
+                    <select 
+                        wire:model="clienteId"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                    >
+                        <option value="">Sin cliente / Venta rápida</option>
+                        @foreach($clientes as $cliente)
+                            <option value="{{ $cliente->id }}">{{ $cliente->name }} @if($cliente->document) - {{ $cliente->document }} @endif</option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Selecciona un cliente para asociar esta venta a su historial
+                    </p>
                 </div>
 
                 <!-- Total -->

@@ -105,8 +105,6 @@ class UsersTable
                 DeleteAction::make(),
             ])
             ->toolbarActions([
-                CreateAction::make()
-                    ->icon('heroicon-o-plus-circle'),
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),

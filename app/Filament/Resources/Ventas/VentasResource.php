@@ -28,6 +28,29 @@ class VentasResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'invoice_number';
 
+    protected static ?bool $globallySearchable = true;
+
+    protected static int $globalSearchResultsLimit = 10;
+
+    public static function getGlobalSearchResultTitle($record): string
+    {
+        return $record->invoice_number ?? 'Venta #' . $record->id;
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['invoice_number', 'customer_name', 'invoice_document'];
+    }
+
+    public static function getGlobalSearchResultDetails($record): array
+    {
+        return [
+            'Cliente' => $record->customer_name ?? 'CONSUMIDOR FINAL',
+            'Total' => '$' . number_format($record->grand_total, 0, ',', '.'),
+            'Fecha' => $record->created_at->format('d/m/Y H:i'),
+        ];
+    }
+
     public static function form(Schema $schema): Schema
     {
         return VentaForm::configure($schema);
@@ -52,14 +75,18 @@ class VentasResource extends Resource
     {
         return [
             'index' => ListVentas::route('/'),
-            // 'create' => CreateVenta::route('/create'), // Deshabilitado - usar carrito
+            'create' => CreateVenta::route('/create'),
         ];
     }
 
     public static function canCreate(): bool
     {
-        // Deshabilitado - usar el carrito para crear ventas
-        return false;
+        // Solo permitir crear ventas si hay una caja abierta
+        $activeSession = \App\Models\CashSession::where('user_id', auth()->id())
+            ->where('status', 'open')
+            ->first();
+        
+        return $activeSession !== null;
     }
 
     public static function canEdit($record): bool

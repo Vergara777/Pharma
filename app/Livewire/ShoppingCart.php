@@ -13,6 +13,7 @@ class ShoppingCart extends Component
     public $isOpen = false;
     public $cart = [];
     public $paymentMethodId = null;
+    public $clienteId = null;
 
     protected $listeners = ['addToCart', 'openCart'];
 
@@ -172,6 +173,7 @@ class ShoppingCart extends Component
                     'subtotal' => $item['price'] * $item['quantity'],
                     'grand_total' => $item['price'] * $item['quantity'],
                     'payment_method_id' => $this->paymentMethodId,
+                    'cliente_id' => $this->clienteId,
                     'user_id' => auth()->id(),
                     'user_name' => auth()->user()->name,
                     'cash_session_id' => $openSession->id,
@@ -196,6 +198,7 @@ class ShoppingCart extends Component
             $this->clearCart();
             $this->isOpen = false;
             $this->paymentMethodId = null;
+            $this->clienteId = null;
 
         } catch (\Exception $e) {
             Notification::make()
@@ -209,10 +212,12 @@ class ShoppingCart extends Component
     public function render()
     {
         $paymentMethods = PaymentMethod::where('is_active', true)->get();
+        $clientes = \App\Models\Cliente::where('is_active', true)->orderBy('name')->get();
         
         return view('livewire.shopping-cart', [
             'total' => $this->getTotal(),
             'paymentMethods' => $paymentMethods,
+            'clientes' => $clientes,
         ]);
     }
 }

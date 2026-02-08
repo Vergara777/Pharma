@@ -20,6 +20,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Configurar longitud de string por defecto para MySQL
+        \Illuminate\Support\Facades\Schema::defaultStringLength(191);
+        
         // Registrar observers
         \App\Models\Lote::observe(\App\Observers\LoteObserver::class);
         

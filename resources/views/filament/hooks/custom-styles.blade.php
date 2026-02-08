@@ -163,4 +163,58 @@ div[class*="notification-actions"],
     -ms-overflow-style: none !important;
     scrollbar-width: none !important;
 }
+
+/* Estilizar scrollbar del sidebar */
+.fi-sidebar-nav::-webkit-scrollbar,
+.fi-sidebar::-webkit-scrollbar,
+aside::-webkit-scrollbar {
+    width: 8px;
+}
+
+.fi-sidebar-nav::-webkit-scrollbar-track,
+.fi-sidebar::-webkit-scrollbar-track,
+aside::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.fi-sidebar-nav::-webkit-scrollbar-thumb,
+.fi-sidebar::-webkit-scrollbar-thumb,
+aside::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    transition: background 0.2s ease;
+}
+
+.fi-sidebar-nav::-webkit-scrollbar-thumb:hover,
+.fi-sidebar::-webkit-scrollbar-thumb:hover,
+aside::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* Modo oscuro */
+.dark .fi-sidebar-nav::-webkit-scrollbar-thumb,
+.dark .fi-sidebar::-webkit-scrollbar-thumb,
+.dark aside::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.dark .fi-sidebar-nav::-webkit-scrollbar-thumb:hover,
+.dark .fi-sidebar::-webkit-scrollbar-thumb:hover,
+.dark aside::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Firefox */
+.fi-sidebar-nav,
+.fi-sidebar,
+aside {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.dark .fi-sidebar-nav,
+.dark .fi-sidebar,
+.dark aside {
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
 </style>

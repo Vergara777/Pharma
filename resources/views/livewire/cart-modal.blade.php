@@ -1,393 +1,174 @@
-<div>
-    @if($isOpen)
+<div 
+    x-data="{ 
+        open: @entangle('isOpen'),
+        init() {
+            window.addEventListener('openCart', () => {
+                this.open = true;
+            });
+        }
+    }"
+    x-cloak
+>
+    <!-- Overlay de Fondo -->
+    <div 
+        x-show="open" 
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        style="position: fixed; inset: 0; z-index: 99999; background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1rem; pointer-events: auto;"
+    >
+        <!-- Contenedor del Modal -->
         <div 
-            wire:click="close"
-            style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 99999; background-color: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; padding: 1rem;"
+            @click.away="open = false"
+            x-show="open"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100"
+            style="width: 100%; max-width: 42rem; background-color: white; border-radius: 1.5rem; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e5e7eb; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);"
+            class="dark:bg-gray-900 dark:border-gray-800"
         >
-            <div 
-                wire:click.stop
-                style="position: relative; width: 100%; max-width: 56rem; max-height: 90vh; background-color: white; border-radius: 0.75rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden; display: flex; flex-direction: column;"
-                class="dark:bg-gray-900"
-            >
-                <!-- Header fijo -->
-                <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem; border-bottom: 1px solid #e5e7eb;" class="dark:border-gray-800">
-                    <h2 style="font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; color: #111827;" class="dark:text-white">
-                        <svg style="width: 1.5rem; height: 1.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                        Carrito de Compras
-                        @if(count($cart) > 0)
-                            <span style="background-color: #f59e0b; color: white; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
-                                {{ count($cart) }}
-                            </span>
-                        @endif
-                    </h2>
+            <!-- Header -->
+            <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; justify-content: space-between; background-color: #f9fafb;" class="dark:bg-gray-800/50 dark:border-gray-800">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="padding: 0.5rem; background-color: #fef3c7; border-radius: 0.75rem; color: #d97706;" class="dark:bg-amber-900/30">
+                        <svg style="width: 1.5rem; height: 1.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                    </div>
+                    <div>
+                        <h2 style="font-size: 1.25rem; font-weight: 800; color: #111827; margin: 0; line-height: 1.2;" class="dark:text-white">Carrito Rápido</h2>
+                        <p style="font-size: 0.75rem; color: #6b7280; font-weight: 500; margin: 0;">Resumen del punto de venta</p>
+                    </div>
+                </div>
+                <button @click="open = false" style="color: #9ca3af; border: none; background: none; cursor: pointer; padding: 0.5rem; border-radius: 0.5rem;" class="hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                    <svg style="width: 1.5rem; height: 1.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div style="padding: 1.5rem; overflow-y: auto; max-height: 55vh; background-color: white;" class="dark:bg-gray-900">
+                @if(empty($cart))
+                    <div style="padding: 4rem 0; text-align: center;">
+                        <div style="width: 6rem; height: 6rem; background-color: #f3f4f6; border-radius: 9999px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; color: #9ca3af;" class="dark:bg-gray-800">
+                             <svg style="width: 3rem; height: 3rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                        </div>
+                        <p style="color: #6b7280; font-size: 1.125rem; font-weight: 500;" class="dark:text-gray-400">Tu carrito está vacío</p>
+                    </div>
+                @else
+                    <table style="width: 100%; text-align: left; border-collapse: separate; border-spacing: 0 0.5rem;">
+                        <thead>
+                            <tr style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #9ca3af; letter-spacing: 0.05em;">
+                                <th style="padding: 0 0.5rem 0.75rem;">PRODUCTO</th>
+                                <th style="padding: 0 0.5rem 0.75rem;">PRECIO</th>
+                                <th style="padding: 0 0.5rem 0.75rem; width: 6rem;">CANT.</th>
+                                <th style="padding: 0 0.5rem 0.75rem; text-align: right;">SUBTOTAL</th>
+                                <th style="padding: 0 0.5rem 0.75rem;"></th>
+                            </tr>
+                        </thead>
+                        <tbody style="font-size: 0.9rem;">
+                            @foreach($cart as $id => $item)
+                                <tr style="background-color: #f9fafb; transition: background-color 0.2s;" class="dark:bg-gray-800/40 hover:bg-gray-50 dark:hover:bg-gray-800/60 group">
+                                    <td style="padding: 0.75rem; border-radius: 0.75rem 0 0 0.75rem; display: flex; align-items: center; gap: 1rem;">
+                                        <img 
+                                            src="{{ $item['image'] && str_starts_with($item['image'], 'http') ? $item['image'] : url('/Images/Pharma1.jpeg') }}" 
+                                            style="width: 2.5rem; height: 2.5rem; border-radius: 0.5rem; object-cover; shadow: 0 1px 2px rgba(0,0,0,0.1);"
+                                            class="dark:border-gray-700"
+                                        >
+                                        <div>
+                                            <div style="font-weight: 700; color: #111827;" class="dark:text-white">{{ $item['name'] }}</div>
+                                            <div style="font-size: 0.7rem; color: #6b7280; font-weight: 600;">{{ strtoupper($item['type'] ?? 'unidad') }} • SKU: {{ $item['sku'] }}</div>
+                                            
+                                            @if(isset($stockErrors[$id]))
+                                                <div style="font-size: 0.9rem; color: #b91c1c; font-weight: 900; margin-top: 8px; background-color: #fee2e2; padding: 10px 14px; border-radius: 12px; border: 2px solid #ef4444; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                                                    <span style="font-size: 1.25rem;">⚠️</span>
+                                                    <span>{{ $stockErrors[$id] }}</span>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td style="padding: 1rem 0.5rem; color: #4b5563; font-weight: 500;" class="dark:text-gray-300">
+                                        ${{ number_format($item['price'], 0, ',', '.') }}
+                                    </td>
+                                    <td style="padding: 1rem 0.5rem;">
+                                        <input 
+                                            wire:key="input-{{ $id }}-{{ $item['qty'] }}"
+                                            type="number" 
+                                            value="{{ $item['qty'] }}"
+                                            wire:change="updateQuantity('{{ $id }}', $event.target.value)"
+                                            style="width: 4rem; padding: 0.35rem 0.5rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-weight: 700; text-align: center; outline: none; transition: border-color 0.2s;"
+                                            class="dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:border-amber-500"
+                                            min="1"
+                                        >
+                                    </td>
+                                    <td style="padding: 1rem 0.5rem; text-align: right; font-weight: 800; color: #111827;" class="dark:text-white">
+                                        ${{ number_format($item['price'] * $item['qty'], 0, ',', '.') }}
+                                    </td>
+                                    <td style="padding: 1rem 0.75rem; text-align: right; border-radius: 0 0.75rem 0.75rem 0;">
+                                        <button 
+                                            wire:click="removeItem('{{ $id }}')"
+                                            style="color: #9ca3af; border: none; background: none; cursor: pointer; padding: 0.4rem; border-radius: 0.4rem;"
+                                            class="hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                                            title="Eliminar producto"
+                                        >
+                                            <svg style="width: 1.25rem; height: 1.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr style="height: 0.25rem;"></tr> <!-- Spacer -->
+                            @endforeach
+                        </tbody>
+                    </table>
+                @endif
+            </div>
+
+            <!-- Footer -->
+            <div style="padding: 1.5rem 2rem; background-color: #ffffff; border-top: 2px dashed #f3f4f6;" class="dark:bg-gray-900 dark:border-gray-800">
+                <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2rem;">
+                    <div>
+                        <span style="font-size: 0.7rem; color: #9ca3af; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.25rem;">VALOR TOTAL</span>
+                        <span style="font-size: 2.25rem; font-weight: 950; color: #d97706; line-height: 1;">${{ number_format($total, 0, ',', '.') }}</span>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; align-items: center;">
                     <button 
-                        wire:click="close"
-                        style="padding: 0.5rem; border-radius: 0.5rem; color: #6b7280; transition: all 0.15s;"
-                        class="hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                        wire:click="clearCart"
+                        @if(empty($cart)) disabled @endif
+                        style="flex: 1; height: 3.5rem; font-size: 0.9rem; font-weight: 700; color: #4b5563; background-color: #f3f4f6; border: none; border-radius: 1rem; cursor: pointer; transition: all 0.2s;"
+                        class="hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                        <svg style="width: 1.25rem; height: 1.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        Vaciar
+                    </button>
+                    <button 
+                        wire:click="goToCheckout"
+                        @if(empty($cart)) disabled @endif
+                        style="flex: 3; height: 3.5rem; font-size: 1.1rem; font-weight: 950; color: white; background-color: #f59e0b; border: none; border-radius: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; transition: all 0.3s; box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.4);"
+                        class="hover:bg-amber-600 dark:hover:bg-amber-500 disabled:opacity-40 disabled:shadow-none disabled:cursor-not-allowed"
+                    >
+                        <span>IR A PAGAR</span>
+                        <svg style="width: 1.5rem; height: 1.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                     </button>
                 </div>
 
-                <!-- Contenido scrolleable -->
-                <div style="flex: 1; overflow-y: auto; padding: 1.5rem;">
-                    @if(empty($cart))
-                        <div style="text-align: center; padding: 3rem 0;">
-                            <svg style="width: 4rem; height: 4rem; margin: 0 auto 1rem; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                <!-- Pantalla de Carga Global para Redirección -->
+                @if($isRedirecting)
+                    <div 
+                        style="position: fixed; inset: 0; z-index: 999999; background-color: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem;"
+                    >
+                        <div style="position: relative; width: 5rem; height: 5rem; display: flex; align-items: center; justify-content: center;">
+                            <svg class="animate-spin" style="width: 4rem; height: 4rem; color: #f59e0b;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle style="opacity: 0.2;" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path style="opacity: 0.9;" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            <p style="font-size: 1.125rem; color: #6b7280; margin-bottom: 1rem;" class="dark:text-gray-400">El carrito está vacío</p>
-                            <p style="font-size: 0.875rem; color: #9ca3af; margin-bottom: 1.5rem;" class="dark:text-gray-500">Agrega productos desde la lista</p>
-                            <a 
-                                href="{{ route('filament.admin.resources.products.index') }}"
-                                style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background-color: #f59e0b; color: white; border-radius: 0.5rem; font-weight: 600; text-decoration: none; transition: all 0.15s;"
-                                class="hover:bg-amber-600"
-                            >
-                                <svg style="width: 1.25rem; height: 1.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                </svg>
-                                Ir a Productos
-                            </a>
                         </div>
-                    @else
-                        <!-- Lista de productos -->
-                        <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
-                            @foreach($cart as $key => $item)
-                                <div style="display: flex; gap: 1rem; padding: 1rem; background-color: #f9fafb; border-radius: 0.75rem; border: 1px solid #e5e7eb;" class="dark:bg-gray-800 dark:border-gray-700">
-                                    <!-- Imagen del producto -->
-                                    <div style="flex-shrink: 0;">
-                                        @if(!empty($item['image']))
-                                            @if(str_starts_with($item['image'], 'http'))
-                                                <img src="{{ $item['image'] }}" alt="{{ $item['name'] }}" style="width: 5rem; height: 5rem; object-fit: cover; border-radius: 0.5rem;">
-                                            @else
-                                                <img src="{{ Storage::disk('local')->url($item['image']) }}" alt="{{ $item['name'] }}" style="width: 5rem; height: 5rem; object-fit: cover; border-radius: 0.5rem;">
-                                            @endif
-                                        @else
-                                            <div style="width: 5rem; height: 5rem; background-color: #e5e7eb; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center;" class="dark:bg-gray-700">
-                                                <svg style="width: 2rem; height: 2rem; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                </svg>
-                                            </div>
-                                        @endif
-                                    </div>
-
-                                    <!-- Información del producto -->
-                                    <div style="flex: 1; min-width: 0;">
-                                        <h4 style="font-weight: 600; font-size: 1rem; color: #111827; margin-bottom: 0.25rem;" class="dark:text-white">
-                                            {{ $item['name'] }}
-                                        </h4>
-                                        @if(!empty($item['description']))
-                                            <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" class="dark:text-gray-400">
-                                                {{ $item['description'] }}
-                                            </p>
-                                        @endif
-                                        <p style="font-size: 0.875rem; color: #6b7280;" class="dark:text-gray-400">
-                                            ${{ number_format($item['price'], 0, ',', '.') }} c/u
-                                        </p>
-                                        @if(isset($item['stock_available']))
-                                            <p style="font-size: 0.75rem; color: #9ca3af; margin-top: 0.25rem;" class="dark:text-gray-500">
-                                                Stock disponible: {{ $item['stock_available'] }}
-                                            </p>
-                                        @endif
-                                    </div>
-
-                                    <!-- Controles de cantidad y precio -->
-                                    <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between;">
-                                        <p style="font-weight: 700; font-size: 1.125rem; color: #111827;" class="dark:text-white">
-                                            ${{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}
-                                        </p>
-                                        
-                                        <!-- Controles de cantidad -->
-                                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
-                                            <button 
-                                                wire:click="decreaseQuantity({{ $item['product_id'] }})"
-                                                style="width: 2rem; height: 2rem; display: flex; align-items: center; justify-content: center; background-color: #f3f4f6; border-radius: 0.375rem; color: #374151; font-weight: 600; transition: all 0.15s;"
-                                                class="hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                                            >
-                                                -
-                                            </button>
-                                            <span style="min-width: 2rem; text-align: center; font-weight: 600; color: #111827;" class="dark:text-white">
-                                                {{ $item['quantity'] }}
-                                            </span>
-                                            <button 
-                                                wire:click="increaseQuantity({{ $item['product_id'] }})"
-                                                style="width: 2rem; height: 2rem; display: flex; align-items: center; justify-content: center; background-color: #f59e0b; border-radius: 0.375rem; color: white; font-weight: 600; transition: all 0.15s;"
-                                                class="hover:bg-amber-600"
-                                            >
-                                                +
-                                            </button>
-                                        </div>
-
-                                        <!-- Botón eliminar -->
-                                        <button 
-                                            wire:click="removeItem({{ $item['product_id'] }})"
-                                            style="margin-top: 0.5rem; padding: 0.25rem 0.5rem; font-size: 0.75rem; color: #ef4444; background-color: #fee2e2; border-radius: 0.375rem; transition: all 0.15s;"
-                                            class="hover:bg-red-200 dark:bg-red-900 dark:text-red-200 dark:hover:bg-red-800"
-                                        >
-                                            Eliminar
-                                        </button>
-                                    </div>
-                                </div>
-                            @endforeach
+                        <div style="text-align: center; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;">
+                            <h3 style="font-size: 1.75rem; font-weight: 900; color: #111827; margin: 0; letter-spacing: -0.025em;">Cargando Ventas...</h3>
+                            <p style="font-size: 1rem; color: #6b7280; font-weight: 700; margin-top: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Procesando pedido en tiempo real</p>
                         </div>
-
-                        <!-- Total -->
-                        <div style="border-top: 2px solid #e5e7eb; padding-top: 1rem; margin-bottom: 1.5rem;" class="dark:border-gray-700">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="font-size: 1.5rem; font-weight: 700; color: #111827;" class="dark:text-white">Total:</span>
-                                <span style="font-size: 1.875rem; font-weight: 700; color: #f59e0b;">
-                                    ${{ number_format($total, 0, ',', '.') }}
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Form de pago -->
-                        <form 
-                            action="{{ route('cart.finalize') }}" 
-                            method="POST" 
-                            style="display: flex; flex-direction: column; gap: 1rem;"
-                            x-data="{
-                                submitForm(event) {
-                                    // Copiar valores de Livewire a los campos hidden antes de enviar
-                                    event.target.querySelector('[name=amount_received]').value = @this.amountReceived;
-                                    event.target.querySelector('[name=payment_reference]').value = @this.paymentReference;
-                                    event.target.querySelector('[name=customer_name]').value = @this.customerName;
-                                    event.target.querySelector('[name=customer_phone]').value = @this.customerPhone;
-                                    event.target.querySelector('[name=customer_email]').value = @this.customerEmail;
-                                    event.target.querySelector('[name=customer_document]').value = @this.customerDocument;
-                                    event.target.querySelector('[name=customer_address]').value = @this.customerAddress;
-                                    event.target.querySelector('[name=generate_invoice]').value = @this.generateInvoice ? '1' : '0';
-                                    event.target.querySelector('[name=invoice_type]').value = @this.invoiceType;
-                                }
-                            }"
-                            @submit="submitForm"
-                        >
-                            @csrf
-                            
-                            <!-- Campos hidden para enviar al backend -->
-                            <input type="hidden" name="amount_received" value="">
-                            <input type="hidden" name="payment_reference" value="">
-                            <input type="hidden" name="customer_name" value="">
-                            <input type="hidden" name="customer_phone" value="">
-                            <input type="hidden" name="customer_email" value="">
-                            <input type="hidden" name="customer_document" value="">
-                            <input type="hidden" name="customer_address" value="">
-                            <input type="hidden" name="generate_invoice" value="">
-                            <input type="hidden" name="invoice_type" value="">
-                            
-                            <!-- Método de pago -->
-                            <div>
-                                <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem;" class="dark:text-gray-300">
-                                    Método de Pago *
-                                </label>
-                                <select 
-                                    name="payment_method_id" 
-                                    wire:model.live="selectedPaymentMethod"
-                                    required 
-                                    style="width: 100%; padding: 0.75rem; font-size: 1rem; border: 2px solid #d1d5db; border-radius: 0.5rem; transition: all 0.15s;"
-                                    class="dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
-                                >
-                                    <option value="">Seleccionar método de pago</option>
-                                    @foreach($paymentMethods as $method)
-                                        <option value="{{ $method->name }}">{{ $method->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <!-- Campos para Efectivo -->
-                            @if($selectedPaymentMethod === 'Efectivo')
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1rem; background-color: #fef3c7; border-radius: 0.5rem; border: 2px solid #fbbf24;" class="dark:bg-yellow-900 dark:border-yellow-700">
-                                    <div>
-                                        <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #92400e; margin-bottom: 0.5rem;" class="dark:text-yellow-200">
-                                            Monto Recibido *
-                                        </label>
-                                        <input 
-                                            type="text" 
-                                            x-data="{ 
-                                                value: @entangle('amountReceived').live,
-                                                formatted: '',
-                                                format() {
-                                                    let num = this.value.toString().replace(/\D/g, '');
-                                                    this.value = parseInt(num) || 0;
-                                                    this.formatted = new Intl.NumberFormat('es-CO').format(this.value);
-                                                }
-                                            }"
-                                            x-init="format()"
-                                            x-model="formatted"
-                                            @input="
-                                                let num = $event.target.value.replace(/\D/g, '');
-                                                value = parseInt(num) || 0;
-                                                format();
-                                            "
-                                            required
-                                            style="width: 100%; padding: 0.75rem; font-size: 1rem; border: 2px solid #fbbf24; border-radius: 0.5rem; background-color: white;"
-                                            class="dark:bg-gray-800 dark:border-yellow-600 dark:text-white"
-                                            placeholder="0"
-                                        >
-                                    </div>
-                                    <div>
-                                        <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #92400e; margin-bottom: 0.5rem;" class="dark:text-yellow-200">
-                                            Cambio
-                                        </label>
-                                        <div style="width: 100%; padding: 0.75rem; font-size: 1.125rem; font-weight: 700; border: 2px solid #fbbf24; border-radius: 0.5rem; background-color: white; color: {{ $change >= 0 ? '#059669' : '#dc2626' }};" class="dark:bg-gray-800">
-                                            ${{ number_format($change, 0, ',', '.') }}
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-
-                            <!-- Campo de referencia para otros métodos de pago -->
-                            @if($selectedPaymentMethod && $selectedPaymentMethod !== 'Efectivo')
-                                <div style="padding: 1rem; background-color: #f0fdf4; border-radius: 0.5rem; border: 2px solid #10b981;" class="dark:bg-green-900 dark:border-green-700">
-                                    <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #065f46; margin-bottom: 0.5rem;" class="dark:text-green-200">
-                                        Número de Referencia / Autorización
-                                    </label>
-                                    <input 
-                                        type="text" 
-                                        wire:model="paymentReference"
-                                        style="width: 100%; padding: 0.75rem; font-size: 1rem; border: 2px solid #10b981; border-radius: 0.5rem; background-color: white;"
-                                        class="dark:bg-gray-800 dark:border-green-600 dark:text-white"
-                                        placeholder="Ej: 123456789"
-                                    >
-                                    <p style="font-size: 0.75rem; color: #065f46; margin-top: 0.5rem;" class="dark:text-green-300">
-                                        Ingrese el número de referencia o autorización de la transacción
-                                    </p>
-                                </div>
-                            @endif
-
-                            <!-- Opciones de Factura/Ticket -->
-                            <div style="padding: 1rem; background-color: white; border-radius: 0.5rem; border: 1px solid #e5e7eb;" class="dark:bg-gray-800 dark:border-gray-700">
-                                <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 0.75rem;" class="dark:text-gray-300">
-                                    Factura / Ticket
-                                </label>
-                                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                                    <label style="display: flex; align-items: center; padding: 0.75rem; border: 2px solid; border-radius: 0.5rem; cursor: pointer; transition: all 0.15s; border-color: {{ $invoiceType === 'none' ? '#f59e0b' : '#e5e7eb' }}; background-color: {{ $invoiceType === 'none' ? '#fef3c7' : 'transparent' }};" class="{{ $invoiceType === 'none' ? '' : 'dark:border-gray-700 hover:border-gray-300' }}">
-                                        <input 
-                                            type="radio" 
-                                            wire:model.live="invoiceType" 
-                                            value="none"
-                                            style="width: 1rem; height: 1rem; color: #f59e0b;"
-                                        >
-                                        <span style="margin-left: 0.75rem; font-size: 0.875rem; font-weight: 500; color: #111827;" class="dark:text-white">No generar factura</span>
-                                    </label>
-                                    <label style="display: flex; align-items: center; padding: 0.75rem; border: 2px solid; border-radius: 0.5rem; cursor: pointer; transition: all 0.15s; border-color: {{ $invoiceType === 'without_data' ? '#f59e0b' : '#e5e7eb' }}; background-color: {{ $invoiceType === 'without_data' ? '#fef3c7' : 'transparent' }};" class="{{ $invoiceType === 'without_data' ? '' : 'dark:border-gray-700 hover:border-gray-300' }}">
-                                        <input 
-                                            type="radio" 
-                                            wire:model.live="invoiceType" 
-                                            value="without_data"
-                                            style="width: 1rem; height: 1rem; color: #f59e0b;"
-                                        >
-                                        <span style="margin-left: 0.75rem; font-size: 0.875rem; font-weight: 500; color: #111827;" class="dark:text-white">Generar ticket sin datos del cliente</span>
-                                    </label>
-                                    <label style="display: flex; align-items: center; padding: 0.75rem; border: 2px solid; border-radius: 0.5rem; cursor: pointer; transition: all 0.15s; border-color: {{ $invoiceType === 'with_data' ? '#f59e0b' : '#e5e7eb' }}; background-color: {{ $invoiceType === 'with_data' ? '#fef3c7' : 'transparent' }};" class="{{ $invoiceType === 'with_data' ? '' : 'dark:border-gray-700 hover:border-gray-300' }}">
-                                        <input 
-                                            type="radio" 
-                                            wire:model.live="invoiceType" 
-                                            value="with_data"
-                                            style="width: 1rem; height: 1rem; color: #f59e0b;"
-                                        >
-                                        <span style="margin-left: 0.75rem; font-size: 0.875rem; font-weight: 500; color: #111827;" class="dark:text-white">Generar factura con datos del cliente</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Campos del cliente (solo si selecciona factura con datos) -->
-                            @if($invoiceType === 'with_data')
-                                <div style="display: grid; grid-template-columns: 1fr; gap: 1rem; padding: 1rem; background-color: #f9fafb; border-radius: 0.5rem; border: 1px solid #e5e7eb;" class="dark:bg-gray-800 dark:border-gray-700">
-                                    <div>
-                                        <label style="display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.5rem;" class="dark:text-gray-300">
-                                            Nombre del Cliente
-                                        </label>
-                                        <input 
-                                            type="text" 
-                                            wire:model="customerName"
-                                            style="width: 100%; padding: 0.75rem; font-size: 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem; background-color: white;"
-                                            class="dark:bg-gray-900 dark:border-gray-600 dark:text-white"
-                                            placeholder="Ej: Juan Pérez"
-                                        >
-                                    </div>
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                        <div>
-                                            <label style="display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.5rem;" class="dark:text-gray-300">
-                                                Teléfono
-                                            </label>
-                                            <input 
-                                                type="tel" 
-                                                wire:model="customerPhone"
-                                                style="width: 100%; padding: 0.75rem; font-size: 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem; background-color: white;"
-                                                class="dark:bg-gray-900 dark:border-gray-600 dark:text-white"
-                                                placeholder="Ej: 3001234567"
-                                            >
-                                        </div>
-                                        <div>
-                                            <label style="display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.5rem;" class="dark:text-gray-300">
-                                                Documento / NIT
-                                            </label>
-                                            <input 
-                                                type="text" 
-                                                wire:model="customerDocument"
-                                                style="width: 100%; padding: 0.75rem; font-size: 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem; background-color: white;"
-                                                class="dark:bg-gray-900 dark:border-gray-600 dark:text-white"
-                                                placeholder="CC, NIT, etc."
-                                            >
-                                        </div>
-                                    </div>
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                        <div>
-                                            <label style="display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.5rem;" class="dark:text-gray-300">
-                                                Email
-                                            </label>
-                                            <input 
-                                                type="email" 
-                                                wire:model="customerEmail"
-                                                style="width: 100%; padding: 0.75rem; font-size: 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem; background-color: white;"
-                                                class="dark:bg-gray-900 dark:border-gray-600 dark:text-white"
-                                                placeholder="Ej: cliente@email.com"
-                                            >
-                                        </div>
-                                        <div>
-                                            <label style="display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.5rem;" class="dark:text-gray-300">
-                                                Dirección
-                                            </label>
-                                            <input 
-                                                type="text" 
-                                                wire:model="customerAddress"
-                                                style="width: 100%; padding: 0.75rem; font-size: 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem; background-color: white;"
-                                                class="dark:bg-gray-900 dark:border-gray-600 dark:text-white"
-                                                placeholder="Dirección completa"
-                                            >
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-                            
-                            <!-- Botones de acción -->
-                            <div style="display: flex; gap: 0.75rem; padding-top: 0.5rem;">
-                                <button 
-                                    type="button"
-                                    wire:click="clearCart"
-                                    style="flex: 1; padding: 0.875rem 1rem; background-color: #f3f4f6; color: #374151; text-align: center; border-radius: 0.5rem; font-weight: 600; font-size: 1rem; border: none; cursor: pointer; transition: all 0.15s;"
-                                    class="dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700"
-                                >
-                                    Vaciar Carrito
-                                </button>
-                                <button 
-                                    type="submit" 
-                                    style="flex: 2; padding: 0.875rem 1rem; background-color: #f59e0b; color: white; border-radius: 0.5rem; font-weight: 600; font-size: 1rem; border: none; cursor: pointer; transition: all 0.15s; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"
-                                    class="hover:bg-amber-600"
-                                    @if($selectedPaymentMethod === 'Efectivo' && $amountReceived < $total) disabled style="opacity: 0.5; cursor: not-allowed;" @endif
-                                >
-                                    Finalizar Venta
-                                </button>
-                            </div>
-                        </form>
-                    @endif
-                </div>
+                    </div>
+                @endif
             </div>
         </div>
-    @endif
+    </div>
 </div>

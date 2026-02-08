@@ -44,6 +44,8 @@ class Ventas extends Model
         'customer_phone',
         'customer_email',
         'user_id',
+        'cliente_id',
+        'factura_id',
         'user_role',
         'user_name',
         'cash_session_id',
@@ -94,6 +96,16 @@ class Ventas extends Model
     public function cashSession(): BelongsTo
     {
         return $this->belongsTo(CashSession::class);
+    }
+
+    public function cliente(): BelongsTo
+    {
+        return $this->belongsTo(Cliente::class);
+    }
+
+    public function factura(): BelongsTo
+    {
+        return $this->belongsTo(Factura::class);
     }
 
     // Scopes

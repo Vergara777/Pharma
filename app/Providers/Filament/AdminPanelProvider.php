@@ -32,11 +32,22 @@ class AdminPanelProvider extends PanelProvider
 {
     public function boot(): void
     {
-        // Ejecutar verificación de stock y vencimientos de forma global
-        // El método ya tiene su propio cache de 5 min para no saturar
+        // Ejecutar verificación de stock y vencimientos solo en Dashboard y Productos
         \Filament\Support\Facades\FilamentView::registerRenderHook(
             'panels::body.start',
-            fn() => \App\Notifications\LowStockNotification::send()
+            function() {
+                $currentUrl = request()->url();
+                
+                // Solo ejecutar si estamos en el dashboard o en la tabla de productos
+                if (str_contains($currentUrl, '/admin') && (
+                    $currentUrl === route('filament.admin.pages.dashboard') || 
+                    str_contains($currentUrl, '/products')
+                )) {
+                    return \App\Notifications\LowStockNotification::send();
+                }
+                
+                return '';
+            }
         );
     }
 
@@ -84,6 +95,10 @@ class AdminPanelProvider extends PanelProvider
             )
             ->renderHook(
                 'panels::body.end',
+                fn() => view('filament.hooks.cart-modal-container')
+            )
+            ->renderHook(
+                'panels::body.end',
                 fn() => view('filament.hooks.barcode-scanner-listener')
             )
             ->renderHook(
@@ -101,15 +116,20 @@ class AdminPanelProvider extends PanelProvider
                     ->icon('heroicon-o-cog-6-tooth'),
             ])
             ->databaseNotifications()
-            ->databaseNotificationsPolling('60s')
+            ->databaseNotificationsPolling('40s')
+            ->globalSearch(true)
+            ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
             ->font('Poppins')
             ->login()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Blue,
                 'danger' => Color::Red,
             ])
-            ->sidebarWidth('20rem')
+            ->sidebarWidth('15rem')
             ->navigationGroups([
+                NavigationGroup::make('Ventas')
+                    ->icon('heroicon-o-shopping-bag')
+                    ->collapsible(),
                 NavigationGroup::make('Configuración')
                     ->icon('heroicon-o-cog-6-tooth')
                     ->collapsible(),
@@ -139,6 +159,7 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                \App\Http\Middleware\CheckOpenCashSession::class,
             ])
             ->authMiddleware([
                 Authenticate::class,
