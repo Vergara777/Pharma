@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+return new class extends Migration 
 {
     /**
      * Run the migrations.
@@ -16,10 +16,8 @@ return new class extends Migration
             $table->string('address', 255)->nullable()->after('phone');
             $table->string('position', 100)->nullable()->after('address');
             $table->date('hire_date')->nullable()->after('position');
-            $table->date('birth_date')->nullable()->after('hire_date');
-            $table->string('id_number', 50)->nullable()->after('birth_date');
-            $table->enum('role', ['admin', 'tech'])->default('tech')->after('id_number');
-            $table->enum('status', ['active', 'inactive'])->default('active')->after('role');
+            $table->string('id_number', 50)->nullable()->after('hire_date');
+            $table->enum('status', ['active', 'inactive'])->default('active')->after('id_number');
             $table->string('avatar', 255)->nullable()->after('status');
         });
     }
@@ -35,9 +33,7 @@ return new class extends Migration
                 'address',
                 'position',
                 'hire_date',
-                'birth_date',
                 'id_number',
-                'role',
                 'status',
                 'avatar',
             ]);

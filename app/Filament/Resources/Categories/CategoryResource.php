@@ -21,7 +21,7 @@ class CategoryResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Categorias';
 
-    protected static string|BackedEnum|null $navigationIcon = 'gmdi-category-tt';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-tag';
 
     protected static ?int $navigationSort = 2;
 
