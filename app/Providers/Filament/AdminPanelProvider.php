@@ -69,6 +69,12 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             ->path('admin')
             ->darkMode(true)  // Habilitar selector de modo oscuro
+            ->icons([
+            // Este es el que colapsa/abre la barra lateral
+            'panels::sidebar.collapse-button' => 'heroicon-o-bars-3-bottom-left', 
+            // También puedes cambiar el de expandir si quieres
+            'panels::sidebar.expand-button' => 'heroicon-o-arrow-right-circle',
+        ])
             ->renderHook(
                 'panels::body.end',
                 fn() => view('filament.hooks.money-input-format')
@@ -126,14 +132,14 @@ class AdminPanelProvider extends PanelProvider
                 'danger' => Color::Red,
             ])
             ->sidebarWidth('15rem')
-            ->navigationGroups([
-                NavigationGroup::make('Ventas')
-                    ->icon('heroicon-o-shopping-bag')
-                    ->collapsible(),
-                NavigationGroup::make('Configuración')
-                    ->icon('heroicon-o-cog-6-tooth')
-                    ->collapsible(),
-            ])
+            // ->navigationGroups([
+            //     NavigationGroup::make('Ventas')
+            //         ->icon('heroicon-o-shopping-bag')
+            //         ->collapsible(),
+            //     NavigationGroup::make('Configuración')
+            //         ->icon('heroicon-o-cog-6-tooth')
+            //         ->collapsible(),
+            // ])
             ->registration(false)
             ->passwordReset()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')

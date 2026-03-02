@@ -20,7 +20,7 @@ class CashSessionResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Cajas';
 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-banknotes';
+    protected static string|BackedEnum|null $navigationIcon = 'gmdi-point-of-sale';
 
     protected static ?int $navigationSort = 5;
 

@@ -79,8 +79,8 @@ class UserInfolist
                                 'tech' => 'info',
                             })
                             ->formatStateUsing(fn (string $state): string => match ($state) {
-                                'admin' => '👑 Administrador',
-                                'tech' => '👨‍💼 Trabajador',
+                                'admin' => 'Administrador',
+                                'tech' => 'Trabajador',
                             }),
                         
                         TextEntry::make('status')
@@ -91,8 +91,8 @@ class UserInfolist
                                 'inactive' => 'danger',
                             })
                             ->formatStateUsing(fn (string $state): string => match ($state) {
-                                'active' => '✅ Activo',
-                                'inactive' => '❌ Inactivo',
+                                'active' => 'Activo',
+                                'inactive' => 'Inactivo',
                             }),
                     ])
                     ->columns(2),

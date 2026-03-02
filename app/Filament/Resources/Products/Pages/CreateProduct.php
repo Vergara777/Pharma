@@ -18,7 +18,7 @@ class CreateProduct extends CreateRecord
         if ($product->stock > $product->max_stock) {
             $excess = $product->stock - $product->max_stock;
             Notification::make()
-                ->title('ℹ️ Stock Excedido')
+                ->title('Stock Excedido')
                 ->body("El producto '{$product->name}' excede el stock máximo por {$excess} unidades. Stock actual: {$product->stock}, Máximo: {$product->max_stock}")
                 ->info()
                 ->icon('heroicon-o-information-circle')
@@ -28,7 +28,7 @@ class CreateProduct extends CreateRecord
         // Notificación de stock agotado
         elseif ($product->stock == 0) {
             Notification::make()
-                ->title('⚠️ Producto Creado Sin Stock')
+                ->title('Producto Creado Sin Stock')
                 ->body("El producto '{$product->name}' fue creado sin stock disponible.")
                 ->warning()
                 ->icon('heroicon-o-exclamation-triangle')
@@ -38,7 +38,7 @@ class CreateProduct extends CreateRecord
         // Notificación de stock bajo
         elseif ($product->stock <= $product->min_stock) {
             Notification::make()
-                ->title('⚠️ Producto Creado con Stock Bajo')
+                ->title('Producto Creado con Stock Bajo')
                 ->body("El producto '{$product->name}' fue creado con stock bajo ({$product->stock} unidades). Mínimo requerido: {$product->min_stock}")
                 ->warning()
                 ->icon('heroicon-o-exclamation-triangle')
@@ -50,7 +50,7 @@ class CreateProduct extends CreateRecord
         if ($product->expires_at && $product->expires_at->isPast()) {
             $daysExpired = now()->diffInDays($product->expires_at);
             Notification::make()
-                ->title('🚫 Producto Creado Vencido')
+                ->title('Producto Creado Vencido')
                 ->body("El producto '{$product->name}' fue creado con fecha de vencimiento pasada ({$daysExpired} días vencido).")
                 ->danger()
                 ->icon('heroicon-o-calendar-x')
@@ -64,7 +64,7 @@ class CreateProduct extends CreateRecord
 
             if ($daysUntilExpiration >= 0 && $daysUntilExpiration <= $alertDays) {
                 Notification::make()
-                    ->title('📅 Producto Próximo a Vencer')
+                    ->title('Producto Próximo a Vencer')
                     ->body("El producto '{$product->name}' vence en {$daysUntilExpiration} días.")
                     ->warning()
                     ->icon('heroicon-o-calendar')

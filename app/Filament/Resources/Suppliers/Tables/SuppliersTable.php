@@ -27,6 +27,9 @@ class SuppliersTable
                     ->label('Email address')
                     ->searchable()
                     ->toggleable(),
+                TextColumn::make('status')
+                    ->searchable()
+                    ->toggleable(),
                 TextColumn::make('address')
                     ->searchable()
                     ->toggleable(),

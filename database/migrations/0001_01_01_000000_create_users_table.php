@@ -14,6 +14,10 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('last_name');
+            $table->enum('document_type', ['CC', 'TI', 'CE', 'PP'])->default('CC');
+            $table->string('document_number')->unique();
+            $table->date('birth_date');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
@@ -21,6 +25,7 @@ return new class extends Migration
             $table->foreignId('current_team_id')->nullable();
             $table->string('profile_photo_path', 2048)->nullable();
             $table->timestamps();
+            $table->enum('role', ['admin', 'user'])->default('user');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

@@ -31,7 +31,7 @@ class FacturaResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Facturas';
 
-    protected static UnitEnum|string|null $navigationGroup = 'Ventas';
+    // protected static UnitEnum|string|null $navigationGroup = 'Ventas';
 
     protected static ?int $navigationSort = 2;
 

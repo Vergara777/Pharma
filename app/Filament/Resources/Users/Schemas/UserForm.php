@@ -92,8 +92,8 @@ class UserForm
                         Select::make('role')
                             ->label('Rol del Sistema')
                             ->options([
-                                'admin' => '👑 Administrador',
-                                'tech' => '👨‍💼 Trabajador',
+                                'admin' => 'Administrador',
+                                'tech' => 'Trabajador',
                             ])
                             ->default('tech')
                             ->required()
@@ -102,8 +102,8 @@ class UserForm
                         Select::make('status')
                             ->label('Estado')
                             ->options([
-                                'active' => '✅ Activo',
-                                'inactive' => '❌ Inactivo',
+                                'active' => 'Activo',
+                                'inactive' => 'Inactivo',
                             ])
                             ->default('active')
                             ->required()

@@ -24,11 +24,11 @@ class UserResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Usuarios';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-s-user-group';
 
-    protected static ?int $navigationSort = 8;
+    protected static ?int $navigationSort = 98;
 
-    protected static UnitEnum|string|null $navigationGroup = 'Configuración';
+    // protected static UnitEnum|string|null $navigationGroup = 'Configuración';
 
     protected static ?string $recordTitleAttribute = 'name';
 

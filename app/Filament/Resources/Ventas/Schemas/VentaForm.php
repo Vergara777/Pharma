@@ -395,7 +395,7 @@ class VentaForm
                             }),
                         
                         \Filament\Forms\Components\Placeholder::make('invoice_note')
-                            ->content('⚠️ Las ventas anónimas (Consumidor Final) no generan facturas automáticas.')
+                            ->content('Las ventas anónimas (Consumidor Final) no generan facturas automáticas.')
                             ->visible(fn (callable $get) => $get('anonymous_invoice')),
                     ])
                     ->collapsed(false)

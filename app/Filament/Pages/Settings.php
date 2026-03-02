@@ -27,9 +27,9 @@ class Settings extends Page implements HasForms
 
     protected static ?string $title = 'Configuración del Sistema';
 
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 99;
 
-    protected static UnitEnum|string|null $navigationGroup = 'Configuración';
+    // protected static UnitEnum|string|null $navigationGroup = 'Configuración';
 
     public ?array $data = [];
     

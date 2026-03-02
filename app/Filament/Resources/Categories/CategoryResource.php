@@ -11,7 +11,6 @@ use App\Models\Category;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
 class CategoryResource extends Resource
@@ -22,9 +21,7 @@ class CategoryResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Categorias';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTag;
-
-    protected static ?string $navigationIconColor = 'warning';
+    protected static string|BackedEnum|null $navigationIcon = 'gmdi-category-tt';
 
     protected static ?int $navigationSort = 2;
 

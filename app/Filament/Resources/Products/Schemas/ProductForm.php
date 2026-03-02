@@ -26,26 +26,26 @@ class ProductForm
                     ->helperText('Orden de visualización'),
                     
                 TextInput::make('sku')
-                    ->label('SKU / Código de Barras')
+                    ->label('Digite SKU o Código de Barras')
                     ->required()
                     ->unique(ignoreRecord: true)
                     ->placeholder('7701234567890')
                     ->helperText('Escanea el código de barras')
-                    ->suffixIcon('heroicon-o-qr-code')
+                    ->suffixIcon('gmdi-barcode-reader')
                     ->autocomplete(false),
                     
                 TextInput::make('name')
                     ->label('Nombre del Producto')
                     ->required()
                     ->placeholder('Acetaminofén 500mg')
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->suffixIcon('gmdi-box'),
                     
                 Textarea::make('description')
                     ->label('Descripción')
                     ->rows(2)
                     ->placeholder('Caja por 10 tabletas')
-                    ->columnSpanFull(),
-                    
+                    ->columnSpanFull(),                    
                 Select::make('status')
                     ->label('Estado')
                     ->options([
@@ -57,7 +57,7 @@ class ProductForm
                     
                 Select::make('category_id')
                     ->label('Categoría')
-                    ->relationship('category', 'name')
+                    ->relationship('category', 'name', 'description', 'status', 'created_at', 'updated_at', fn ($query) => $query->where('status', 'active'))
                     ->searchable()
                     ->preload()
                     ->required()
@@ -65,6 +65,17 @@ class ProductForm
                     ->createOptionForm([
                         TextInput::make('name')
                             ->label('Nombre')
+                            ->required(),
+                        TextInput::make('description')
+                            ->label('Descripción')
+                            ->required(),
+                        Select::make('status')
+                            ->label('Estado')
+                            ->options([
+                                'active' => 'Activo',
+                                'inactive' => 'Inactivo',
+                            ])
+                            ->default('active')
                             ->required(),
                     ]),
 

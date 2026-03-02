@@ -29,7 +29,7 @@ class Profile extends Page implements HasForms
 
     protected static ?int $navigationSort = 6;
 
-    protected static UnitEnum|string|null $navigationGroup = 'Configuración';
+    // protected static UnitEnum|string|null $navigationGroup = 'Configuración';
 
     public ?array $data = [];
     

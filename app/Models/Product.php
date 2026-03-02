@@ -64,21 +64,35 @@ class Product extends Model
     /**
      * Get the image URL (handles both file paths and external URLs)
      */
-    public function getImageUrlAttribute()
+    // public function getImageUrlAttribute()
+    // {
+    //     if (!$this->image) {
+    //         return null;
+    //     }
+        
+    //     // Si es una URL externa, devolverla directamente
+    //     if (str_starts_with($this->image, 'http')) {
+    //         return $this->image;
+    //     }
+        
+    //     // Si es un archivo local, generar la URL temporal
+    //     return \Storage::disk('local')->url($this->image);
+    // }
+    
+    public function getImageUrlAttribute(): ?string
     {
         if (!$this->image) {
             return null;
         }
-        
-        // Si es una URL externa, devolverla directamente
+
         if (str_starts_with($this->image, 'http')) {
             return $this->image;
         }
-        
-        // Si es un archivo local, generar la URL temporal
-        return \Storage::disk('local')->url($this->image);
+
+        // Usa el disco 'public' para que la URL sea accesible desde el navegador
+        return \Storage::disk('public')->url($this->image);
     }
-    
+
     /**
      * Verificar si el producto está activo
      */
@@ -173,8 +187,8 @@ class Product extends Model
     public function scopeExpiringSoon($query, $days = 30)
     {
         return $query->whereNotNull('expires_at')
-                    ->whereDate('expires_at', '>', now())
-                    ->whereDate('expires_at', '<=', now()->addDays($days));
+                    ->where('expires_at', '>', now())
+                    ->where('expires_at', '<', now()->StartOfDay());
     }
     
     /**
@@ -183,7 +197,7 @@ class Product extends Model
     public function scopeExpired($query)
     {
         return $query->whereNotNull('expires_at')
-                    ->whereDate('expires_at', '<', now());
+                    ->where('expires_at', '<', now()->StartOfDay);
     }
     
     protected static function booted()

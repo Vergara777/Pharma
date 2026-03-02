@@ -21,6 +21,18 @@ return [
     'resend' => [
         'key' => env('RESEND_API_KEY'),
     ],
+    'Factus' => [
+        'key' => env('FACTUS_API_KEY'),
+        'url' => env('FACTUS_API_URL'),
+        'token' => env('FACTUS_API_TOKEN'),
+        'grant_type' => env('FACTUS_API_GRANT_TYPE'),
+        'id' => env('FACTUS_API_ID'),
+        'client_id' => env('FACTUS_API_CLIENT_ID'),
+        'client_secret' => env('FACTUS_API_CLIENT_SECRET'),
+        'username' => env('FACTUS_API_USERNAME'),
+        'password' => env('FACTUS_API_PASSWORD'),
+
+    ],
 
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),

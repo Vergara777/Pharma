@@ -54,7 +54,7 @@ class LowStockAlertWidget extends Widget
 
                 Notification::make()
                     ->warning()
-                    ->title('⚠️ Alerta de Inventario')
+                    ->title('Alerta de Inventario')
                     ->body(implode(' y ', $message))
                     ->persistent()
                     ->send();
@@ -80,7 +80,7 @@ class LowStockAlertWidget extends Widget
             if ($expiredProducts > 0) {
                 Notification::make()
                     ->danger()
-                    ->title('🚨 Productos Vencidos')
+                    ->title('Productos Vencidos')
                     ->body("{$expiredProducts} producto(s) ya están vencidos")
                     ->persistent()
                     ->send();
@@ -90,7 +90,7 @@ class LowStockAlertWidget extends Widget
             if ($expiringProducts > 0) {
                 Notification::make()
                     ->warning()
-                    ->title('📅 Productos Próximos a Vencer')
+                    ->title('Productos Próximos a Vencer')
                     ->body("{$expiringProducts} producto(s) vencen en los próximos {$expirationAlertDays} días")
                     ->persistent()
                     ->send();

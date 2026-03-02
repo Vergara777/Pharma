@@ -18,13 +18,15 @@ class SupplierSeeder extends Seeder
                 'name' => 'Drogueria Central S.A.',
                 'phone' => '3001234567',
                 'email' => 'ventas@central.com',
-                'address' => 'Av. Principal #123'
+                'address' => 'Av. Principal #123',
+                'status' => 'active'
             ],
             [
                 'name' => 'Laboratorios PharmaVida',
                 'phone' => '3159876543',
                 'email' => 'contacto@pharmavida.com',
-                'address' => 'Zona Industrial Local 4'
+                'address' => 'Zona Industrial Local 4',
+                'status' => 'active'
             ]
         ];
 

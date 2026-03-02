@@ -13,11 +13,11 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         $categories = [
-            ['name' => 'Analgesicos'],
-            ['name' => 'Antibioticos'],
-            ['name' => 'Vitaminas y Suplementos'],
-            ['name' => 'Cuidado Personal'],
-            ['name' => 'Pediatria']
+            ['name' => 'Analgesicos', 'description' => 'Medicamentos para el dolor', 'status' => 'active'],
+            ['name' => 'Antibioticos', 'description' => 'Medicamentos para infecciones bacterianas', 'status' => 'active'],
+            ['name' => 'Vitaminas y Suplementos', 'description' => 'Vitaminas y suplementos', 'status' => 'active'],
+            ['name' => 'Cuidado Personal', 'description' => 'Productos de cuidado personal', 'status' => 'active'],
+            ['name' => 'Pediatria', 'description' => 'Productos para niños', 'status' => 'active']
         ];
 
         foreach ($categories as $category) {

@@ -12,15 +12,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Convertir los valores existentes de decimal a entero (multiplicar por 100 para no perder centavos)
-        // Pero como en Colombia no usamos centavos, simplemente redondeamos
-        DB::statement('ALTER TABLE facturas MODIFY subtotal BIGINT NOT NULL DEFAULT 0');
-        DB::statement('ALTER TABLE facturas MODIFY tax BIGINT NOT NULL DEFAULT 0');
-        DB::statement('ALTER TABLE facturas MODIFY discount BIGINT NOT NULL DEFAULT 0');
-        DB::statement('ALTER TABLE facturas MODIFY total BIGINT NOT NULL DEFAULT 0');
-        
-        DB::statement('ALTER TABLE factura_items MODIFY price BIGINT NOT NULL');
-        DB::statement('ALTER TABLE factura_items MODIFY subtotal BIGINT NOT NULL');
+        Schema::table('facturas', function (Blueprint $table) {
+            $table->bigInteger('subtotal')->default(0)->change();
+            $table->bigInteger('tax')->default(0)->change();
+            $table->bigInteger('discount')->default(0)->change();
+            $table->bigInteger('total')->default(0)->change();
+        });
+
+        Schema::table('factura_items', function (Blueprint $table) {
+            $table->bigInteger('price')->change();
+            $table->bigInteger('subtotal')->change();
+        });
     }
 
     /**
@@ -28,12 +30,16 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement('ALTER TABLE facturas MODIFY subtotal DECIMAL(10, 2) NOT NULL DEFAULT 0');
-        DB::statement('ALTER TABLE facturas MODIFY tax DECIMAL(10, 2) NOT NULL DEFAULT 0');
-        DB::statement('ALTER TABLE facturas MODIFY discount DECIMAL(10, 2) NOT NULL DEFAULT 0');
-        DB::statement('ALTER TABLE facturas MODIFY total DECIMAL(10, 2) NOT NULL DEFAULT 0');
-        
-        DB::statement('ALTER TABLE factura_items MODIFY price DECIMAL(10, 2) NOT NULL');
-        DB::statement('ALTER TABLE factura_items MODIFY subtotal DECIMAL(10, 2) NOT NULL');
+        Schema::table('facturas', function (Blueprint $table) {
+            $table->decimal('subtotal', 10, 2)->default(0)->change();
+            $table->decimal('tax', 10, 2)->default(0)->change();
+            $table->decimal('discount', 10, 2)->default(0)->change();
+            $table->decimal('total', 10, 2)->default(0)->change();
+        });
+
+        Schema::table('factura_items', function (Blueprint $table) {
+            $table->decimal('price', 10, 2)->change();
+            $table->decimal('subtotal', 10, 2)->change();
+        });
     }
 };

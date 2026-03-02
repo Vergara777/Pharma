@@ -14,7 +14,7 @@ class ProductInfolist
     {
         return $schema
             ->components([
-                Section::make('Información del Producto')
+                Section::make('Detalles del Producto')
                     ->schema([
                         ImageEntry::make('image')
                             ->label('Imagen')

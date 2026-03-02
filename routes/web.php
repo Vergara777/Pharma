@@ -31,6 +31,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/facturas/{factura}/ticket', function (\App\Models\Factura $factura) {
         return view('facturas.ticket', compact('factura'));
     })->name('facturas.ticket');
+
+    // Ruta para obtener token de Factus
+    Route::get('/admin/factus/token', [\App\Http\Controllers\Factus\AuthController::class, 'getToken'])->name('factus.token');
 });
 
 Route::middleware([

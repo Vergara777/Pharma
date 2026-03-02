@@ -24,19 +24,22 @@ class ProductsTable
     {
         return $table
             ->searchPlaceholder('Buscar por nombre, SKU o escanear código de barras...')
+            ->deferLoading()
+            ->loadingIndicatorPosition('top')
             ->columns([
                 ImageColumn::make('image')
                     ->label('')
                     ->circular()
                     ->size(40)
                     ->defaultImageUrl(url('/Images/Pharma1.jpeg'))
-                    ->url(fn ($record) => $record->image && str_starts_with($record->image, 'http') ? $record->image : null)
-                    ->toggleable(),
+                    ->url(fn($record) => $record->image && str_starts_with($record->image, 'http') ? $record->image : null)
+                    ->toggleable()
+                    ->placeholder('Sin imagen'),
                 TextColumn::make('name')
                     ->label('Nombre del Producto')
                     ->searchable(['name', 'sku'])
                     ->sortable()
-                    ->description(fn ($record) => 'SKU: ' . $record->sku)
+                    ->description(fn($record) => 'SKU: ' . $record->sku)
                     ->weight('medium')
                     ->toggleable(),
                 TextColumn::make('category.name')
@@ -44,22 +47,33 @@ class ProductsTable
                     ->sortable()
                     ->badge()
                     ->color('warning')
-                    ->toggleable(),
+                    ->toggleable()
+                    ->placeholder('Sin categoría'),
+                TextColumn::make('description')
+                    ->label('Descripción')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->limit(50)
+                    ->badge()
+                    ->color('gray')
+                    ->placeholder('Sin descripción'),
                 TextColumn::make('price')
                     ->label('Precio Venta')
-                    ->formatStateUsing(fn ($state) => '$' . number_format($state, 0, ',', '.'))
+                    ->formatStateUsing(fn($state) => '$' . number_format($state, 0, ',', '.'))
                     ->sortable()
-                    ->toggleable(),
+                    ->toggleable()
+                    ->placeholder('0.00'),
                 TextColumn::make('cost')
                     ->label('Costo')
-                    ->formatStateUsing(fn ($state) => '$' . number_format($state, 0, ',', '.'))
+                    ->formatStateUsing(fn($state) => '$' . number_format($state, 0, ',', '.'))
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->placeholder('0.00'),
                 TextColumn::make('price_unit')
                     ->label('Precio Unidad')
-                    ->formatStateUsing(fn ($state) => $state ? '$' . number_format($state, 0, ',', '.') : '-')
+                    ->formatStateUsing(fn($state) => $state ? '$' . number_format($state, 0, ',', '.') : '-')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->placeholder('0.00'),
                 TextColumn::make('stock')
                     ->label('Stock')
                     ->numeric()
@@ -69,7 +83,7 @@ class ProductsTable
                         $stock = $record->stock;
                         $min = $record->min_stock ?? 5;
                         $max = $record->max_stock ?? 100;
-                        
+
                         // Sin stock
                         if ($stock == 0) {
                             return 'danger';
@@ -95,7 +109,7 @@ class ProductsTable
                         $stock = $record->stock;
                         $min = $record->min_stock ?? 5;
                         $max = $record->max_stock ?? 100;
-                        
+
                         if ($stock == 0) {
                             return '¡Sin stock!';
                         } elseif ($stock > $max) {
@@ -127,10 +141,11 @@ class ProductsTable
                     ->placeholder('Sin fecha')
                     ->badge()
                     ->color(function ($record) {
-                        if (!$record->expires_at) return 'gray';
-                        
+                        if (!$record->expires_at)
+                            return 'gray';
+
                         $daysUntilExpiration = now()->diffInDays($record->expires_at, false);
-                        
+
                         if ($daysUntilExpiration < 0) {
                             return 'danger';
                         } elseif ($daysUntilExpiration <= 30) {
@@ -140,10 +155,11 @@ class ProductsTable
                         }
                     })
                     ->description(function ($record) {
-                        if (!$record->expires_at) return null;
-                        
+                        if (!$record->expires_at)
+                            return null;
+
                         $daysUntilExpiration = now()->diffInDays($record->expires_at, false);
-                        
+
                         if ($daysUntilExpiration < 0) {
                             return new \Illuminate\Support\HtmlString('<span style="color: #ef4444; font-weight: 600;">¡Vencido!</span>');
                         } elseif ($daysUntilExpiration == 0) {
@@ -157,17 +173,19 @@ class ProductsTable
                     ->toggleable(),
                 TextColumn::make('shelf')
                     ->label('Ubicación')
-                    ->formatStateUsing(fn ($record) => 
+                    ->formatStateUsing(
+                        fn($record) =>
                         collect([$record->shelf, $record->row, $record->position])
                             ->filter()
                             ->join('-') ?: 'N/A'
                     )
-                    ->description(fn ($record) => 'Estante-Fila-Posición')
+                    ->description(fn($record) => 'Estante-Fila-Posición')
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('supplier.name')
                     ->label('Proveedor')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->placeholder('Sin proveedor'),
                 TextColumn::make('min_stock')
                     ->label('Stock Mín.')
                     ->numeric()
@@ -185,34 +203,36 @@ class ProductsTable
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
                     ->falseColor('danger')
-                    ->getStateUsing(fn ($record) => $record->status === 'active')
+                    ->getStateUsing(fn($record) => $record->status === 'active')
                     ->alignment('center')
                     ->sortable()
                     ->toggleable()
                     ->action(
                         RecordAction::make('toggle_status')
-                            ->label(fn ($record) => $record->status === 'active' ? 'Desactivar Producto' : 'Activar Producto')
+                            ->label(fn($record) => $record->status === 'active' ? 'Desactivar Producto' : 'Activar Producto')
                             ->requiresConfirmation()
-                            ->modalHeading(fn ($record) => $record->status === 'active' ? 'Desactivar Producto' : 'Activar Producto')
-                            ->modalDescription(fn ($record) => $record->status === 'active' 
+                            ->modalHeading(fn($record) => $record->status === 'active' ? 'Desactivar Producto' : 'Activar Producto')
+                            ->modalDescription(
+                                fn($record) => $record->status === 'active'
                                 ? '¿Estás seguro de desactivar este producto? No aparecerá en el sistema hasta que lo actives nuevamente.'
                                 : '¿Estás seguro de activar este producto? Volverá a estar disponible en el sistema.'
                             )
-                            ->modalSubmitActionLabel(fn ($record) => $record->status === 'active' ? 'Sí, desactivar' : 'Sí, activar')
+                            ->modalSubmitActionLabel(fn($record) => $record->status === 'active' ? 'Sí, desactivar' : 'Sí, activar')
                             ->action(function ($record) {
                                 $newStatus = $record->status === 'active' ? 'retired' : 'active';
                                 $record->update(['status' => $newStatus]);
-                                
+
                                 \Filament\Notifications\Notification::make()
                                     ->success()
                                     ->title($newStatus === 'active' ? 'Producto activado' : 'Producto desactivado')
                                     ->body("El producto {$record->name} fue " . ($newStatus === 'active' ? 'activado' : 'desactivado') . ' exitosamente')
                                     ->send();
                             })
-                            ->color(fn ($record) => $record->status === 'active' ? 'danger' : 'success')
+                            ->color(fn($record) => $record->status === 'active' ? 'danger' : 'success')
                     )
-                    ->tooltip(fn ($record) => $record->status === 'active' 
-                        ? 'Presiona para desactivar' 
+                    ->tooltip(
+                        fn($record) => $record->status === 'active'
+                        ? 'Presiona para desactivar'
                         : 'Presiona para activar'
                     ),
             ])
@@ -231,19 +251,19 @@ class ProductsTable
                     ->multiple(),
                 Filter::make('low_stock')
                     ->label('Stock Bajo')
-                    ->query(fn ($query) => $query->whereColumn('stock', '<=', 'min_stock')->where('stock', '>', 0))
+                    ->query(fn($query) => $query->whereColumn('stock', '<=', 'min_stock')->where('stock', '>', 0))
                     ->toggle(),
                 Filter::make('out_of_stock')
                     ->label('Sin Stock')
-                    ->query(fn ($query) => $query->where('stock', 0))
+                    ->query(fn($query) => $query->where('stock', 0))
                     ->toggle(),
                 Filter::make('approaching_stock')
                     ->label('Por Agotar')
-                    ->query(fn ($query) => $query->whereRaw('stock > min_stock AND stock <= (min_stock + 10)'))
+                    ->query(fn($query) => $query->whereRaw('stock > min_stock AND stock <= (min_stock + 10)'))
                     ->toggle(),
                 Filter::make('overstock')
                     ->label('Stock Excedido')
-                    ->query(fn ($query) => $query->whereColumn('stock', '>', 'max_stock'))
+                    ->query(fn($query) => $query->whereColumn('stock', '>', 'max_stock'))
                     ->toggle(),
                 Filter::make('expiring_soon')
                     ->label('Próximos a Vencer')
@@ -256,7 +276,7 @@ class ProductsTable
                     ->toggle(),
                 Filter::make('expired')
                     ->label('Vencidos')
-                    ->query(fn ($query) => $query->whereNotNull('expires_at')->whereDate('expires_at', '<', now()))
+                    ->query(fn($query) => $query->whereNotNull('expires_at')->whereDate('expires_at', '<', now()))
                     ->toggle(),
                 SelectFilter::make('status')
                     ->label('Estado')
@@ -275,7 +295,7 @@ class ProductsTable
                     ->modal()
                     ->modalWidth('3xl')
                     ->color('primary')
-                    ->visible(fn () => auth()->user()->role === 'admin'),
+                    ->visible(fn() => auth()->user()->role === 'admin'),
                 RecordAction::make('addToCart')
                     ->label('Agregar')
                     ->icon('heroicon-o-shopping-cart')
@@ -294,7 +314,7 @@ class ProductsTable
                         $openSession = \App\Models\CashSession::where('user_id', auth()->id())
                             ->where('status', 'open')
                             ->first();
-                        
+
                         if (!$openSession) {
                             \Filament\Notifications\Notification::make()
                                 ->title('Caja Cerrada')
@@ -304,12 +324,12 @@ class ProductsTable
                                 ->send();
                             return;
                         }
-                        
+
                         $quantity = $data['quantity'] ?? 1;
-                        
+
                         // Recargar el producto para tener el stock actualizado
                         $product = \App\Models\Product::find($record->id);
-                        
+
                         // Verificar stock disponible
                         if ($product->stock < $quantity) {
                             \Filament\Notifications\Notification::make()
@@ -320,14 +340,14 @@ class ProductsTable
                                 ->send();
                             return;
                         }
-                        
+
                         // USAR EL NUEVO SERVICIO DE CARRITO
                         \App\Services\CartService::add($product, $quantity, 'unit');
-                        
+
                         // Disparar eventos para actualizar el badge, modal y tabla
                         $livewire->dispatch('cartUpdated');
                         $livewire->dispatch('refreshProducts');
-                        
+
                         \Filament\Notifications\Notification::make()
                             ->title('Producto agregado')
                             ->body("{$product->name} x{$quantity} agregado al carrito")
@@ -336,31 +356,32 @@ class ProductsTable
                             ->send();
                     })
                     ->modalHeading('Agregar al Carrito')
-                    ->modalDescription(fn ($record) => "¿Cuántas unidades de {$record->name} deseas agregar?")
+                    ->modalDescription(fn($record) => "¿Cuántas unidades de {$record->name} deseas agregar?")
                     ->modalSubmitActionLabel('Agregar al Carrito')
                     ->modalWidth('md')
-                    ->visible(fn ($record) => $record->stock > 0 && $record->status === 'active'),
+                    ->visible(fn($record) => $record->stock > 0 && $record->status === 'active'),
                 DeleteAction::make()
-                    ->visible(fn () => auth()->user()->role === 'admin'),
+                    ->visible(fn() => auth()->user()->role === 'admin'),
                 RecordAction::make('deactivate')
                     ->label('Desactivar')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->requiresConfirmation()
                     ->modalHeading('Desactivar Producto')
-                    ->modalDescription(fn ($record) => 
-                        $record->stock == 0 
-                            ? "Este producto no tiene stock disponible. ¿Deseas desactivarlo?"
-                            : ($record->expires_at && now()->diffInDays($record->expires_at, false) < 0
-                                ? "Este producto está vencido. ¿Deseas desactivarlo?"
-                                : "¿Deseas desactivar este producto?")
+                    ->modalDescription(
+                        fn($record) =>
+                        $record->stock == 0
+                        ? "Este producto no tiene stock disponible. ¿Deseas desactivarlo?"
+                        : ($record->expires_at && now()->diffInDays($record->expires_at, false) < 0
+                            ? "Este producto está vencido. ¿Deseas desactivarlo?"
+                            : "¿Deseas desactivar este producto?")
                     )
                     ->modalSubmitActionLabel('Sí, desactivar')
                     ->action(function ($record) {
                         $record->update(['status' => 'retired']);
-                        
+
                         $reason = $record->stock == 0 ? 'sin stock' : 'vencido';
-                        
+
                         \Filament\Notifications\Notification::make()
                             ->title('Producto desactivado')
                             ->body("El producto ha sido desactivado por estar {$reason}")
@@ -368,9 +389,10 @@ class ProductsTable
                             ->duration(5000)
                             ->send();
                     })
-                    ->visible(fn ($record) => 
+                    ->visible(
+                        fn($record) =>
                         $record->status === 'active' && (
-                            $record->stock == 0 || 
+                            $record->stock == 0 ||
                             ($record->expires_at && now()->diffInDays($record->expires_at, false) < 0)
                         )
                     ),
@@ -384,52 +406,55 @@ class ProductsTable
                     ->modalSubmitActionLabel('Sí, activar')
                     ->action(function ($record) {
                         $record->update(['status' => 'active']);
-                        
+
                         \Filament\Notifications\Notification::make()
                             ->title('Producto activado')
                             ->body('El producto ha sido activado exitosamente')
                             ->success()
+                            ->color('success')
                             ->duration(5000)
                             ->send();
                     })
-                    ->visible(fn ($record) => $record->status === 'retired'),
+                    ->visible(fn($record) => $record->status === 'retired'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    EditBulkAction::make()
+                        ->visible(fn() => auth()->user()->role === 'admin'),
                 ])
-                    ->visible(fn () => auth()->user()->role === 'admin'),
+                    ->visible(fn() => auth()->user()->role === 'admin'),
             ])
             ->toolbarActions([
                 CreateAction::make()
                     ->modal()
                     ->modalWidth('3xl')
                     ->icon('heroicon-o-plus-circle')
-                    ->visible(fn () => auth()->user()->role === 'admin'),
+                    ->visible(fn() => auth()->user()->role === 'admin'),
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ])
-                    ->visible(fn () => auth()->user()->role === 'admin'),
+                    ->visible(fn() => auth()->user()->role === 'admin'),
             ])
-            ->recordClasses(fn ($record) => match (true) {
+            ->recordClasses(fn($record) => match (true) {
                 // Productos desactivados (gris con opacidad) - PRIORIDAD MÁXIMA
                 $record->status === 'retired' => 'opacity-50',
-                
+
                 // Crítico: Sin stock (rojo)
                 $record->stock == 0 => 'fi-row-danger',
-                
-                // Crítico: Vencido (rojo)
+
+                    // Crítico: Vencido (rojo)
                 ($record->expires_at && now()->diffInDays($record->expires_at, false) < 0) => 'fi-row-danger',
-                
+
                 // Advertencia: Stock bajo (naranja)
                 $record->stock <= ($record->min_stock ?? 5) => 'fi-row-warning',
-                
-                // Advertencia: Próximo a vencer (naranja)
+
+                    // Advertencia: Próximo a vencer (naranja)
                 ($record->expires_at && now()->diffInDays($record->expires_at, false) <= 30) => 'fi-row-warning',
-                
+
                 // Info: Stock excedido (azul)
                 $record->stock > ($record->max_stock ?? 100) => 'fi-row-info',
-                
+
                 // Normal
                 default => null,
             })
@@ -437,7 +462,7 @@ class ProductsTable
             ->persistSortInSession()
             ->persistSearchInSession()
             ->persistColumnSearchesInSession()
-            ->paginationPageOptions([10, 25, 50, 100])
-            ->defaultPaginationPageOption(25);
+            ->paginationPageOptions([5, 10, 25, 50, 100, 1000])
+            ->defaultPaginationPageOption(10);
     }
 }

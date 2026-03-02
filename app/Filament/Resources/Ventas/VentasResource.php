@@ -22,7 +22,7 @@ class VentasResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Ventas';
 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-shopping-cart';
+    protected static string|BackedEnum|null $navigationIcon = 'gmdi-point-of-sale';
 
     protected static ?int $navigationSort = 4;
 

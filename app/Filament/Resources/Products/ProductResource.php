@@ -12,10 +12,8 @@ use App\Filament\Resources\Products\Tables\ProductsTable;
 use App\Models\Product;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use BackedEnum;
-use UnitEnum;
 
 class ProductResource extends Resource
 {

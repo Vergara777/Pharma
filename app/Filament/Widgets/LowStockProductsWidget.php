@@ -19,7 +19,7 @@ class LowStockProductsWidget extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->heading('⚠️ Productos con Stock Bajo')
+            ->heading('Productos con Stock Bajo')
             ->query(
                 Product::query()
                     ->whereColumn('stock', '<=', 'min_stock')

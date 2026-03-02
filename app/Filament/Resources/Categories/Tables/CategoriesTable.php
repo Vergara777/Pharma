@@ -19,6 +19,14 @@ class CategoriesTable
             ->columns([
                 TextColumn::make('name')
                     ->searchable()
+                    ->toggleable(), 
+                TextColumn::make('description')
+                    ->searchable()
+                    ->toggleable()
+                    ->placeholder('Sin descripción'),
+                TextColumn::make('status')
+                    ->badge()
+                    ->color(fn ($state) => $state === 'active' ? 'success' : 'danger')
                     ->toggleable(),
                 TextColumn::make('created_at')
                     ->dateTime()

@@ -18,7 +18,7 @@ class LowStockNotification extends Notification
         public string $title,
         public string $body,
         public string $type = 'warning',
-        public ?string $icon = null,
+        public ?string $icon = 'gmdi-notification-add',
         public ?array $actions = null
     ) {}
 
@@ -180,10 +180,10 @@ class LowStockNotification extends Notification
         // --- LÓGICA DE ALERTA VISUAL (TOAST) ---
         if (auth()->user()?->role === 'admin') {
             FilamentNotification::make()
-                ->title('⚠️ Alertas de Inventario')
+                ->title('Alertas de Inventario')
                 ->body('Se detectaron problemas: ' . implode(', ', $messageParts))
                 ->danger()
-                ->icon('heroicon-o-bell-alert')
+                ->icon('gmdi-notification-important-s')
                 ->duration(30000)
                 ->actions($actions) // Aquí salen todos los botones
                 ->send();

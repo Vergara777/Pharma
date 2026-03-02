@@ -31,7 +31,7 @@ class OtherOpenCashSessionsWidget extends BaseWidget
                     }])
                     ->orderBy('opened_at', 'desc')
             )
-            ->heading('👥 Otras Cajas Abiertas')
+            ->heading('Otras Cajas Abiertas')
             ->columns([
                 TextColumn::make('id')
                     ->label('Caja #')
@@ -106,11 +106,11 @@ class OtherOpenCashSessionsWidget extends BaseWidget
                                     $difference = $cleanValue - $theoretical;
                                     
                                     if ($difference > 0) {
-                                        return '✅ Sobran $' . number_format($difference, 0, ',', '.');
+                                        return 'Sobran $' . number_format($difference, 0, ',', '.');
                                     } elseif ($difference < 0) {
-                                        return '❌ Faltan $' . number_format(abs($difference), 0, ',', '.');
+                                        return 'Faltan $' . number_format(abs($difference), 0, ',', '.');
                                     } else {
-                                        return '✓ Cuadra exacto';
+                                        return 'Cuadra exacto';
                                     }
                                 })
                                 ->extraAttributes(function ($get) use ($record) {

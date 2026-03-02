@@ -95,11 +95,11 @@ class ListCashSessions extends ListRecords
                                 $difference = $cleanValue - $theoretical;
                                 
                                 if ($difference > 0) {
-                                    return '✅ Sobran $' . number_format($difference, 0, ',', '.');
+                                    return 'Sobran $' . number_format($difference, 0, ',', '.');
                                 } elseif ($difference < 0) {
-                                    return '❌ Faltan $' . number_format(abs($difference), 0, ',', '.');
+                                    return 'Faltan $' . number_format(abs($difference), 0, ',', '.');
                                 } else {
-                                    return '✓ Cuadra exacto';
+                                    return 'Cuadra exacto';
                                 }
                             })
                             ->extraAttributes(function ($get) {
