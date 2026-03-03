@@ -25,6 +25,20 @@ class UsersTable
                     ->disk('public')
                     ->size(40)
                     ->toggleable(),
+
+                TextColumn::make('document_type')
+                    ->label('Tipo')
+                    ->required()
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
+                
+                TextColumn::make('document_number')
+                    ->label('Documento')
+                    ->required()
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
                 
                 TextColumn::make('name')
                     ->label('Nombre')
@@ -90,7 +104,7 @@ class UsersTable
                     ->label('Rol')
                     ->options([
                         'admin' => 'Administrador',
-                        'tech' => 'Técnico',
+                        'tech' => 'Trabajador',
                     ]),
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Estado')

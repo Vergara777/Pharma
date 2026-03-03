@@ -203,15 +203,15 @@ class ProductsTable
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
                     ->falseColor('danger')
-                    ->getStateUsing(fn($record) => $record->status === 'active')
+                    ->getStateUsing(fn($record) => $record->status === 'Status')
                     ->alignment('center')
                     ->sortable()
                     ->toggleable()
                     ->action(
                         RecordAction::make('toggle_status')
-                            ->label(fn($record) => $record->status === 'active' ? 'Desactivar Producto' : 'Activar Producto')
+                            ->label(fn($record) => $record->status === 'Status' ? 'Desactivar Producto' : 'Activar Producto')
                             ->requiresConfirmation()
-                            ->modalHeading(fn($record) => $record->status === 'active' ? 'Desactivar Producto' : 'Activar Producto')
+                            ->modalHeading(fn($record) => $record->status === 'Status' ? 'Desactivar Producto' : 'Activar Producto')
                             ->modalDescription(
                                 fn($record) => $record->status === 'active'
                                 ? '¿Estás seguro de desactivar este producto? No aparecerá en el sistema hasta que lo actives nuevamente.'

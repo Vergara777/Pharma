@@ -21,7 +21,7 @@ class ProductSeeder extends Seeder
                  es uno de los medicamentos más utilizados a nivel mundial para el tratamiento del dolor y la fiebre. A diferencia de otros analgésicos comunes, 
                  se destaca por ser suave con el estómago,
                  aunque requiere un control estricto de la dosis para evitar daños al hígado.',
-            'image' => '',
+            'image' => 'https://farmawebonline.com/wp-content/uploads/2025/02/7702057275396.jpg',
             'price' => 25000,
             'cost' => 15000,
             'stock' => 100,
@@ -33,6 +33,11 @@ class ProductSeeder extends Seeder
             'status' => 'active',
             'category_id' => 1, // Analgesicos
             'supplier_id' => 1, // Drogueria Central
+            'expiration_date' => '2025-12-31',
+            'shelf' => '1',
+            'row' => '1',
+            'position' => '1',
+            'expires_at' => '2025-12-31',
         ]
         );
 
@@ -42,7 +47,7 @@ class ProductSeeder extends Seeder
             'name' => 'Vitamina C Efervescente',
             'description' => 'La vitamina C efervescente es una forma popular y conveniente de consumir este nutriente esencial. 
                 Al disolverse en agua, crea una bebida burbujeante que facilita la absorción y es ideal para personas con dificultades para tragar pastillas.',
-            'image' => '',
+            'image' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfWkuklW28LAbNISJXDrI_CGBICx8ETgGQog&s',
             'price' => 15500,
             'cost' => 9000,
             'stock' => 50,
@@ -54,6 +59,11 @@ class ProductSeeder extends Seeder
             'status' => 'active',
             'category_id' => 3, // Vitaminas
             'supplier_id' => 2, // PharmaVida
+            'expiration_date' => '2025-12-31',
+            'shelf' => '1',
+            'row' => '1',
+            'position' => '1',      
+            'expires_at' => '2025-12-31',
         ]
         );
     }

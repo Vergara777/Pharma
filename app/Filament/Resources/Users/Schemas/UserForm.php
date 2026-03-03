@@ -36,6 +36,21 @@ class UserForm
                         
                         Grid::make(2)
                             ->schema([
+                                Select::make('document_type')
+                                    ->label('Tipo de Documento')
+                                    ->native(true)
+                                    ->options([
+                                        'CC' => 'Cédula de Ciudadanía',
+                                        'CE' => 'Cédula de Extranjería',
+                                        'PA' => 'Pasaporte',
+                                    ])
+                                    ->required()
+                                    ->maxLength(2), 
+                                TextInput::make('document_number')
+                                    ->label('Número de Documento')
+                                    ->required()
+                                    ->maxLength(10),
+
                                 TextInput::make('name')
                                     ->label('Nombre Completo')
                                     ->required()
@@ -54,11 +69,11 @@ class UserForm
                                 TextInput::make('phone')
                                     ->label('Teléfono')
                                     ->tel()
-                                    ->maxLength(32),
+                                    ->maxLength(10),
                                 
                                 TextInput::make('id_number')
                                     ->label('Nº Identificación')
-                                    ->maxLength(50),
+                                    ->maxLength(10),
                             ]),
                         
                         Grid::make(2)

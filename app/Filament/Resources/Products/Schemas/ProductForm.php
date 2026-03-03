@@ -17,13 +17,13 @@ class ProductForm
         return $schema
             ->columns(2)
             ->components([
-                // Información Básica
+                // Información Básica del producto
                 TextInput::make('display_no')
-                    ->label('Número de Display')
+                    ->label('Número de posición')
                     ->numeric()
                     ->default(0)
                     ->placeholder('0')
-                    ->helperText('Orden de visualización'),
+                    ->helperText('Orden de visualización en la lista'),
                     
                 TextInput::make('sku')
                     ->label('Digite SKU o Código de Barras')
@@ -79,7 +79,7 @@ class ProductForm
                             ->required(),
                     ]),
 
-                // Precios y Costos
+                // Precios y Costos del producto
                 TextInput::make('cost')
                     ->label('Costo de Compra')
                     ->prefix('$')
@@ -97,7 +97,7 @@ class ProductForm
                     ->formatStateUsing(fn ($state) => $state ? number_format($state, 0, '', '.') : '0')
                     ->dehydrateStateUsing(fn ($state) => $state ? (int) str_replace('.', '', $state) : 0),
 
-                // Unidades y Presentaciones (juntos)
+                // Unidades y Presentaciones (juntos) para facilitar la gestión de productos con múltiples presentaciones y evitar confusiones al crear productos nuevos
                 TextInput::make('unit_name')
                     ->label('Unidad')
                     ->default('unidad')
@@ -135,7 +135,7 @@ class ProductForm
                     
                 Select::make('supplier_id')
                     ->label('Proveedor')
-                    ->relationship('supplier', 'name')
+                    ->relationship('supplier', 'name', 'status')
                     ->searchable()
                     ->preload()
                     ->required()
