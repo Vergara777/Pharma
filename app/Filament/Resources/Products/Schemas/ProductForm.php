@@ -57,7 +57,7 @@ class ProductForm
                     
                 Select::make('category_id')
                     ->label('Categoría')
-                    ->relationship('category', 'name', 'description', 'status', 'created_at', 'updated_at', fn ($query) => $query->where('status', 'active'))
+                    ->relationship('category', 'name', fn ($query) => $query->where('status', 'active'))
                     ->searchable()
                     ->preload()
                     ->required()
@@ -135,7 +135,7 @@ class ProductForm
                     
                 Select::make('supplier_id')
                     ->label('Proveedor')
-                    ->relationship('supplier', 'name', 'status')
+                    ->relationship('supplier', 'name')
                     ->searchable()
                     ->preload()
                     ->required()

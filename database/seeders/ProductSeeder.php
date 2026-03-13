@@ -33,11 +33,11 @@ class ProductSeeder extends Seeder
             'status' => 'active',
             'category_id' => 1, // Analgesicos
             'supplier_id' => 1, // Drogueria Central
-            'expiration_date' => '2025-12-31',
+            'expiration_date' => '2027-12-31',
             'shelf' => '1',
             'row' => '1',
             'position' => '1',
-            'expires_at' => '2025-12-31',
+            'expires_at' => '2027-12-31',
         ]
         );
 
@@ -59,11 +59,11 @@ class ProductSeeder extends Seeder
             'status' => 'active',
             'category_id' => 3, // Vitaminas
             'supplier_id' => 2, // PharmaVida
-            'expiration_date' => '2025-12-31',
+            'expiration_date' => '2027-12-31',
             'shelf' => '1',
             'row' => '1',
             'position' => '1',      
-            'expires_at' => '2025-12-31',
+            'expires_at' => '2027-12-31',
         ]
         );
     }

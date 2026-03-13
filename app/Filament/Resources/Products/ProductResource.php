@@ -15,6 +15,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use BackedEnum;
 
+
 class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
@@ -31,11 +32,22 @@ class ProductResource extends Resource
 
     protected static ?bool $globallySearchable = true;
 
-    protected static int $globalSearchResultsLimit = 20;
+    protected static int $globalSearchResultsLimit = 10;
 
     public static function getGlobalSearchResultTitle($record): string
     {
         return $record->name . ' - ' . $record->sku;
+    }
+
+    public static function getGlobalSearchEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getGlobalSearchEloquentQuery()->with('category');
+    }
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()
+        ->with('category', 'supplier');
     }
 
     public static function getGloballySearchableAttributes(): array

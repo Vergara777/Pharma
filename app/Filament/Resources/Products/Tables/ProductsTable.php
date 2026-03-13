@@ -25,7 +25,7 @@ class ProductsTable
         return $table
             ->searchPlaceholder('Buscar por nombre, SKU o escanear código de barras...')
             ->deferLoading()
-            ->loadingIndicatorPosition('top')
+            // ->loadingIndicatorPosition('top')
             ->columns([
                 ImageColumn::make('image')
                     ->label('')
@@ -241,13 +241,11 @@ class ProductsTable
                     ->label('Categoría')
                     ->relationship('category', 'name')
                     ->searchable()
-                    ->preload()
                     ->multiple(),
                 SelectFilter::make('supplier_id')
                     ->label('Proveedor')
                     ->relationship('supplier', 'name')
                     ->searchable()
-                    ->preload()
                     ->multiple(),
                 Filter::make('low_stock')
                     ->label('Stock Bajo')
@@ -284,7 +282,8 @@ class ProductsTable
                         'active' => 'Activo',
                         'retired' => 'Retirado',
                     ])
-                    ->multiple(),
+                    ->multiple()
+                    ->searchable(),
             ])
             ->actions([
                 ViewAction::make()
@@ -420,8 +419,6 @@ class ProductsTable
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                    EditBulkAction::make()
-                        ->visible(fn() => auth()->user()->role === 'admin'),
                 ])
                     ->visible(fn() => auth()->user()->role === 'admin'),
             ])
@@ -462,7 +459,7 @@ class ProductsTable
             ->persistSortInSession()
             ->persistSearchInSession()
             ->persistColumnSearchesInSession()
-            ->paginationPageOptions([5, 10, 25, 50, 100, 1000])
+            ->paginationPageOptions([5, 10, 25, 50, 100])
             ->defaultPaginationPageOption(10);
     }
 }
