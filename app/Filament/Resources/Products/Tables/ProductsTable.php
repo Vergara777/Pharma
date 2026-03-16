@@ -203,15 +203,15 @@ class ProductsTable
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
                     ->falseColor('danger')
-                    ->getStateUsing(fn($record) => $record->status === 'Status')
+                    ->getStateUsing(fn($record) => $record->status === 'active')
                     ->alignment('center')
                     ->sortable()
                     ->toggleable()
                     ->action(
                         RecordAction::make('toggle_status')
-                            ->label(fn($record) => $record->status === 'Status' ? 'Desactivar Producto' : 'Activar Producto')
+                            ->label(fn($record) => $record->status === 'active' ? 'Desactivar Producto' : 'Activar Producto')
                             ->requiresConfirmation()
-                            ->modalHeading(fn($record) => $record->status === 'Status' ? 'Desactivar Producto' : 'Activar Producto')
+                            ->modalHeading(fn($record) => $record->status === 'active' ? 'Desactivar Producto' : 'Activar Producto')
                             ->modalDescription(
                                 fn($record) => $record->status === 'active'
                                 ? '¿Estás seguro de desactivar este producto? No aparecerá en el sistema hasta que lo actives nuevamente.'
@@ -239,13 +239,15 @@ class ProductsTable
             ->filters([
                 SelectFilter::make('category_id')
                     ->label('Categoría')
-                    ->relationship('category', 'name')
+                    ->relationship('category', 'name', fn ($query) => $query->orderBy('name'))
                     ->searchable()
+                    ->preload(false)
                     ->multiple(),
                 SelectFilter::make('supplier_id')
                     ->label('Proveedor')
-                    ->relationship('supplier', 'name')
+                    ->relationship('supplier', 'name', fn ($query) => $query->orderBy('name'))
                     ->searchable()
+                    ->preload(false)
                     ->multiple(),
                 Filter::make('low_stock')
                     ->label('Stock Bajo')
@@ -326,14 +328,11 @@ class ProductsTable
 
                         $quantity = $data['quantity'] ?? 1;
 
-                        // Recargar el producto para tener el stock actualizado
-                        $product = \App\Models\Product::find($record->id);
-
-                        // Verificar stock disponible
-                        if ($product->stock < $quantity) {
+                        // Usar $record inyectado directamente (evitar consulta redundante)
+                        if ($record->stock < $quantity) {
                             \Filament\Notifications\Notification::make()
                                 ->title('Stock insuficiente')
-                                ->body("Solo hay {$product->stock} unidades disponibles")
+                                ->body("Solo hay {$record->stock} unidades disponibles")
                                 ->danger()
                                 ->duration(5000)
                                 ->send();
@@ -341,7 +340,7 @@ class ProductsTable
                         }
 
                         // USAR EL NUEVO SERVICIO DE CARRITO
-                        \App\Services\CartService::add($product, $quantity, 'unit');
+                        \App\Services\CartService::add($record, $quantity, 'unit');
 
                         // Disparar eventos para actualizar el badge, modal y tabla
                         $livewire->dispatch('cartUpdated');
@@ -349,7 +348,7 @@ class ProductsTable
 
                         \Filament\Notifications\Notification::make()
                             ->title('Producto agregado')
-                            ->body("{$product->name} x{$quantity} agregado al carrito")
+                            ->body("{$record->name} x{$quantity} agregado al carrito")
                             ->success()
                             ->duration(5000)
                             ->send();

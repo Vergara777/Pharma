@@ -170,6 +170,12 @@ class LoteResource extends Resource
             ->columns(1); // Main layout: Single column to stack sections vertically
     }
 
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['product', 'proveedor', 'usuarioRegistro']);
+    }
+
     public static function getPages(): array
     {
         return [

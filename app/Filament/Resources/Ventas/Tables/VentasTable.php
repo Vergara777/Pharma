@@ -123,9 +123,9 @@ class VentasTable
                     ->default('active'),
                 Tables\Filters\SelectFilter::make('product_id')
                     ->label('Producto')
-                    ->relationship('product', 'name')
+                    ->relationship('product', 'name', fn ($query) => $query->orderBy('name'))
                     ->searchable()
-                    ->preload(),
+                    ->preload(false),
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         \Filament\Forms\Components\DatePicker::make('desde')

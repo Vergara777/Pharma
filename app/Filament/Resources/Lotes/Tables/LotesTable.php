@@ -158,15 +158,15 @@ class LotesTable
                 
                 SelectFilter::make('product_id')
                     ->label('Producto')
-                    ->relationship('product', 'name')
+                    ->relationship('product', 'name', fn ($query) => $query->orderBy('name'))
                     ->searchable()
-                    ->preload(),
+                    ->preload(false),
                 
                 SelectFilter::make('proveedor_id')
                     ->label('Proveedor')
-                    ->relationship('proveedor', 'name')
+                    ->relationship('proveedor', 'name', fn ($query) => $query->orderBy('name'))
                     ->searchable()
-                    ->preload(),
+                    ->preload(false),
                 
                 Filter::make('proximos_a_vencer')
                     ->label('Próximos a Vencer (30 días)')
@@ -259,6 +259,8 @@ class LotesTable
                     ->color('danger'),
             ])
             ->defaultSort('codigo_lote', 'asc')
+            ->paginationPageOptions([10, 25, 50, 100])
+            ->defaultPaginationPageOption(25)
             ->poll('30s');
     }
 }

@@ -37,6 +37,12 @@ class VentasResource extends Resource
         return $record->invoice_number ?? 'Venta #' . $record->id;
     }
 
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['items.product', 'product', 'user', 'cliente']);
+    }
+
     public static function getGloballySearchableAttributes(): array
     {
         return ['invoice_number', 'customer_name', 'invoice_document'];

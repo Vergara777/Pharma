@@ -51,3 +51,6 @@ Route::get('/Roles', function () {
 // Route::get('/', function () {
 //     return redirect('/admin');
 // });
+Route::get('/prueba', function () {
+    return "Hola Luis";
+});

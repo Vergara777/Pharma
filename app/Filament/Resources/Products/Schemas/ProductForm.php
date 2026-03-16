@@ -39,7 +39,7 @@ class ProductForm
                     ->required()
                     ->placeholder('Acetaminofén 500mg')
                     ->columnSpanFull()
-                    ->suffixIcon('gmdi-box'),
+                    ->suffixIcon('gmdi-inventory-2'),
                     
                 Textarea::make('description')
                     ->label('Descripción')

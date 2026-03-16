@@ -36,14 +36,9 @@ class CategoryResource extends Resource
         return CategoryForm::configure($schema);
     }
 
-    public static function getGlobalSearchEloquentQuery(): \Illuminate\Database\Eloquent\Builder
-    {
-        return parent::getGlobalSearchEloquentQuery()->with('products');
-    }
-
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {
-        return parent::getEloquentQuery()->with('products');
+        return parent::getEloquentQuery();
     }
 
     public static function table(Table $table): Table

@@ -39,6 +39,12 @@ class FacturaResource extends Resource
 
     protected static int $globalSearchResultsLimit = 10;
 
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['cliente', 'user']);
+    }
+
     public static function getGlobalSearchResultTitle($record): string
     {
         return $record->invoice_number;
