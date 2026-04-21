@@ -19,85 +19,83 @@ class UsersTable
     {
         return $table
             ->columns([
-                ImageColumn::make('avatar')
-                    ->label('')
-                    ->circular()
-                    ->disk('public')
-                    ->size(40)
-                    ->toggleable(),
+                \Filament\Tables\Columns\Layout\Split::make([
+                    ImageColumn::make('avatar')
+                        ->label('')
+                        ->circular()
+                        ->size(40)
+                        ->defaultImageUrl(fn ($record) => $record->profile_photo_url)
+                        ->grow(false),
 
-                TextColumn::make('document_type')
-                    ->label('Tipo')
-                    ->required()
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(),
-                
-                TextColumn::make('document_number')
-                    ->label('Documento')
-                    ->required()
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(),
-                
-                TextColumn::make('name')
-                    ->label('Nombre')
-                    ->searchable()
-                    ->sortable()
-                    ->description(fn ($record) => $record->email)
-                    ->weight('medium')
-                    ->toggleable(),
-                
-                TextColumn::make('position')
-                    ->label('Cargo')
-                    ->searchable()
-                    ->placeholder('Sin cargo')
-                    ->toggleable(),
-                
-                TextColumn::make('role')
-                    ->label('Rol')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'admin' => 'warning',
-                        'tech' => 'info',
-                    })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'admin' => '👑 Administrador',
-                        'tech' => '👨‍💼 Trabajador',
-                    })
-                    ->toggleable(),
-                
-                TextColumn::make('status')
-                    ->label('Estado')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'active' => 'success',
-                        'inactive' => 'danger',
-                    })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'active' => 'Activo',
-                        'inactive' => 'Inactivo',
-                    })
-                    ->toggleable(),
-                
-                TextColumn::make('phone')
-                    ->label('Teléfono')
-                    ->searchable()
-                    ->placeholder('Sin teléfono')
-                    ->toggleable(),
-                
-                TextColumn::make('hire_date')
-                    ->label('Fecha de Contratación')
-                    ->date('d/m/Y')
-                    ->sortable()
-                    ->placeholder('Sin fecha')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                
-                TextColumn::make('created_at')
-                    ->label('Fecha de Registro')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    \Filament\Tables\Columns\Layout\Stack::make([
+                        TextColumn::make('name')
+                            ->label('Nombre')
+                            ->weight('bold')
+                            ->searchable()
+                            ->sortable(),
+                        TextColumn::make('document_number')
+                            ->label('Documento')
+                            ->icon('heroicon-m-identification')
+                            ->color('gray')
+                            ->searchable()
+                            ->placeholder('Sin documento'),
+                    ])->space(1),
+
+                    \Filament\Tables\Columns\Layout\Stack::make([
+                        TextColumn::make('phone')
+                            ->label('Teléfono')
+                            ->icon('heroicon-m-phone')
+                            ->searchable()
+                            ->placeholder('Sin teléfono'),
+                        TextColumn::make('email')
+                            ->label('Email')
+                            ->icon('heroicon-m-envelope')
+                            ->color('gray')
+                            ->searchable()
+                            ->placeholder('Sin correo'),
+                    ])->space(1),
+
+                    \Filament\Tables\Columns\Layout\Stack::make([
+                        TextColumn::make('role')
+                            ->label('Rol')
+                            ->badge()
+                            ->color(fn (string $state): string => match ($state) {
+                                'admin' => 'warning',
+                                'tech' => 'info',
+                                default => 'gray',
+                            })
+                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                'admin' => 'Administrador',
+                                'tech' => 'Trabajador',
+                                default => $state,
+                            }),
+                        TextColumn::make('status')
+                            ->label('Estado')
+                            ->badge()
+                            ->color(fn (string $state): string => match ($state) {
+                                'active' => 'success',
+                                'inactive' => 'danger',
+                                default => 'gray',
+                            })
+                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                'active' => 'Activo',
+                                'inactive' => 'Inactivo',
+                                default => $state,
+                            }),
+                    ])->space(1),
+
+                    \Filament\Tables\Columns\Layout\Stack::make([
+                        TextColumn::make('position')
+                            ->label('Cargo')
+                            ->icon('heroicon-m-briefcase')
+                            ->placeholder('Sin cargo'),
+                        TextColumn::make('hire_date')
+                            ->label('Fecha')
+                            ->icon('heroicon-m-calendar')
+                            ->date('d/m/Y')
+                            ->placeholder('Sin fecha'),
+                    ])->space(1),
+                ])->from('md'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('role')
@@ -114,8 +112,10 @@ class UsersTable
                     ]),
             ])
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
+                ViewAction::make()
+                    ->color('gray'),
+                EditAction::make()
+                    ->color('warning'),
                 DeleteAction::make(),
             ])
             ->toolbarActions([

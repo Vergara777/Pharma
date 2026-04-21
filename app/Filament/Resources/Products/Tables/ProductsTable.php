@@ -17,6 +17,8 @@ use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Product;
 
 class ProductsTable
 {
@@ -25,7 +27,6 @@ class ProductsTable
         return $table
             ->searchPlaceholder('Buscar por nombre, SKU o escanear código de barras...')
             ->deferLoading()
-            ->loadingIndicatorPosition('top')
             ->columns([
                 ImageColumn::make('image')
                     ->label('')
@@ -84,24 +85,15 @@ class ProductsTable
                         $min = $record->min_stock ?? 5;
                         $max = $record->max_stock ?? 100;
 
-                        // Sin stock
                         if ($stock == 0) {
                             return 'danger';
-                        }
-                        // Stock excede el máximo
-                        elseif ($stock > $max) {
+                        } elseif ($stock > $max) {
                             return 'info';
-                        }
-                        // Stock bajo (menor o igual al mínimo)
-                        elseif ($stock <= $min) {
+                        } elseif ($stock <= $min) {
                             return 'danger';
-                        }
-                        // Stock por agotar (entre mínimo y mínimo + 10)
-                        elseif ($stock <= ($min + 10)) {
+                        } elseif ($stock <= ($min + 10)) {
                             return 'warning';
-                        }
-                        // Stock normal
-                        else {
+                        } else {
                             return 'success';
                         }
                     })
@@ -203,22 +195,22 @@ class ProductsTable
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
                     ->falseColor('danger')
-                    ->getStateUsing(fn($record) => $record->status === 'Status')
+                    ->getStateUsing(fn($record) => $record->status === 'active')
                     ->alignment('center')
                     ->sortable()
                     ->toggleable()
                     ->action(
                         RecordAction::make('toggle_status')
-                            ->label(fn($record) => $record->status === 'Status' ? 'Desactivar Producto' : 'Activar Producto')
+                            ->label(fn($record) => $record->status === 'active' ? 'Desactivar Producto' : 'Activar Producto')
                             ->requiresConfirmation()
-                            ->modalHeading(fn($record) => $record->status === 'Status' ? 'Desactivar Producto' : 'Activar Producto')
+                            ->modalHeading(fn($record) => $record->status === 'active' ? 'Desactivar Producto' : 'Activar Producto')
                             ->modalDescription(
                                 fn($record) => $record->status === 'active'
                                 ? '¿Estás seguro de desactivar este producto? No aparecerá en el sistema hasta que lo actives nuevamente.'
                                 : '¿Estás seguro de activar este producto? Volverá a estar disponible en el sistema.'
                             )
                             ->modalSubmitActionLabel(fn($record) => $record->status === 'active' ? 'Sí, desactivar' : 'Sí, activar')
-                            ->action(function ($record) {
+                            ->action(function ($record, $livewire) {
                                 $newStatus = $record->status === 'active' ? 'retired' : 'active';
                                 $record->update(['status' => $newStatus]);
 
@@ -227,6 +219,8 @@ class ProductsTable
                                     ->title($newStatus === 'active' ? 'Producto activado' : 'Producto desactivado')
                                     ->body("El producto {$record->name} fue " . ($newStatus === 'active' ? 'activado' : 'desactivado') . ' exitosamente')
                                     ->send();
+
+                                $livewire->dispatch('$refresh');
                             })
                             ->color(fn($record) => $record->status === 'active' ? 'danger' : 'success')
                     )
@@ -290,11 +284,12 @@ class ProductsTable
                 ViewAction::make()
                     ->modal()
                     ->modalWidth('3xl')
-                    ->color('info'),
+                    ->color('gray'),
                 EditAction::make()
                     ->modal()
                     ->modalWidth('3xl')
-                    ->color('primary')
+                    ->color('warning')
+                    ->successNotificationTitle('Producto actualizado')
                     ->visible(fn() => auth()->user()->role === 'admin'),
                 RecordAction::make('addToCart')
                     ->label('Agregar')
@@ -310,7 +305,6 @@ class ProductsTable
                             ->live(),
                     ])
                     ->action(function ($record, array $data, $livewire) {
-                        // Verificar si hay una caja abierta
                         $openSession = \App\Models\CashSession::where('user_id', auth()->id())
                             ->where('status', 'open')
                             ->first();
@@ -326,11 +320,8 @@ class ProductsTable
                         }
 
                         $quantity = $data['quantity'] ?? 1;
-
-                        // Recargar el producto para tener el stock actualizado
                         $product = \App\Models\Product::find($record->id);
 
-                        // Verificar stock disponible
                         if ($product->stock < $quantity) {
                             \Filament\Notifications\Notification::make()
                                 ->title('Stock insuficiente')
@@ -341,10 +332,8 @@ class ProductsTable
                             return;
                         }
 
-                        // USAR EL NUEVO SERVICIO DE CARRITO
                         \App\Services\CartService::add($product, $quantity, 'unit');
 
-                        // Disparar eventos para actualizar el badge, modal y tabla
                         $livewire->dispatch('cartUpdated');
                         $livewire->dispatch('refreshProducts');
 
@@ -379,7 +368,6 @@ class ProductsTable
                     ->modalSubmitActionLabel('Sí, desactivar')
                     ->action(function ($record) {
                         $record->update(['status' => 'retired']);
-
                         $reason = $record->stock == 0 ? 'sin stock' : 'vencido';
 
                         \Filament\Notifications\Notification::make()
@@ -420,42 +408,123 @@ class ProductsTable
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                    EditBulkAction::make()
-                        ->visible(fn() => auth()->user()->role === 'admin'),
                 ])
                     ->visible(fn() => auth()->user()->role === 'admin'),
             ])
             ->toolbarActions([
-                CreateAction::make()
-                    ->modal()
-                    ->modalWidth('3xl')
-                    ->icon('heroicon-o-plus-circle')
-                    ->visible(fn() => auth()->user()->role === 'admin'),
+                \Filament\Actions\ActionGroup::make([
+                    RecordAction::make('downloadTemplate')
+                        ->label('Descargar Plantilla')
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->color('gray')
+                        ->action(function () {
+                            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+                            $sheet = $spreadsheet->getActiveSheet();
+
+                            // Encabezados
+                            $headers = [
+                                'sku', 'name', 'description', 'price', 'cost', 'stock',
+                                'min_stock', 'max_stock', 'unit_name', 'package_name',
+                                'units_per_package', 'price_unit', 'price_package',
+                                'shelf', 'row', 'position', 'expires_at', 'status',
+                                'category_id', 'supplier_id'
+                            ];
+
+                            $col = 'A';
+                            foreach ($headers as $header) {
+                                $sheet->setCellValue($col . '1', $header);
+                                $col++;
+                            }
+
+                            // Estilos
+                            $sheet->getStyle('A1:U1')->getFont()->setBold(true);
+                            $sheet->getStyle('A1:U1')->getFill()
+                                ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                                ->getStartColor()->setRGB('4F46E5');
+                            $sheet->getStyle('A1:U1')->getFont()->getColor()->setRGB('FFFFFF');
+
+                            // Auto-size columns
+                            foreach (range('A', 'U') as $col) {
+                                $sheet->getColumnDimension($col)->setAutoSize(true);
+                            }
+
+                            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+                            $filePath = storage_path('app/private/plantilla-productos.xlsx');
+                            $writer->save($filePath);
+
+                            return response()->download($filePath, 'plantilla-productos.xlsx', [
+                                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                            ])->deleteFileAfterSend(true);
+                        }),
+                    RecordAction::make('exportReport')
+                        ->label('Reporte PDF')
+                        ->icon('heroicon-o-document-chart-bar')
+                        ->color('info')
+                        ->requiresConfirmation()
+                        ->modalHeading('Exportar Reporte PDF')
+                        ->modalDescription('¿Deseas descargar el reporte completo de productos en PDF?')
+                        ->modalSubmitActionLabel('Descargar PDF')
+                        ->action(function () {
+                            $products = \App\Models\Product::with(['category', 'supplier'])->get();
+
+                            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.products', [
+                                'products' => $products,
+                                'farmacia' => 'Mi Farmacia',
+                            ])->setPaper('a4', 'landscape');
+
+                            return response()->streamDownload(
+                                fn() => print($pdf->output()),
+                                'reporte-productos-' . now()->format('Y-m-d') . '.pdf'
+                            );
+                        }),
+                    \Filament\Actions\ExportAction::make()
+                        ->exporter(\App\Filament\Exports\ProductExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->label('Exportar Excel')
+                        ->columnMapping(false),
+                    RecordAction::make('importExcel')
+                        ->label('Importar Excel')
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('success')
+                        ->form([
+                            \Filament\Forms\Components\FileUpload::make('file')
+                                ->label('Archivo Excel')
+                                ->disk('public')
+                                ->directory('imports')
+                                ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'])
+                                ->required(),
+                        ])
+                        ->action(function (array $data) {
+                            \Maatwebsite\Excel\Facades\Excel::import(
+                                new \App\Imports\ProductsImport,
+                                \Illuminate\Support\Facades\Storage::disk('public')->path($data['file'])
+                            );
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Importación exitosa')
+                                ->body('Los productos fueron importados correctamente')
+                                ->success()
+                                ->send();
+                        })
+                        ->modalHeading('Importar Productos desde Excel')
+                        ->modalSubmitActionLabel('Importar'),
+                ])
+                    ->label('Acciones')
+                    ->icon('heroicon-o-ellipsis-vertical')
+                    ->button()
+                    ->color('primary'),
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ])
                     ->visible(fn() => auth()->user()->role === 'admin'),
             ])
             ->recordClasses(fn($record) => match (true) {
-                // Productos desactivados (gris con opacidad) - PRIORIDAD MÁXIMA
                 $record->status === 'retired' => 'opacity-50',
-
-                // Crítico: Sin stock (rojo)
                 $record->stock == 0 => 'fi-row-danger',
-
-                    // Crítico: Vencido (rojo)
                 ($record->expires_at && now()->diffInDays($record->expires_at, false) < 0) => 'fi-row-danger',
-
-                // Advertencia: Stock bajo (naranja)
                 $record->stock <= ($record->min_stock ?? 5) => 'fi-row-warning',
-
-                    // Advertencia: Próximo a vencer (naranja)
                 ($record->expires_at && now()->diffInDays($record->expires_at, false) <= 30) => 'fi-row-warning',
-
-                // Info: Stock excedido (azul)
                 $record->stock > ($record->max_stock ?? 100) => 'fi-row-info',
-
-                // Normal
                 default => null,
             })
             ->persistFiltersInSession()
@@ -463,6 +532,6 @@ class ProductsTable
             ->persistSearchInSession()
             ->persistColumnSearchesInSession()
             ->paginationPageOptions([5, 10, 25, 50, 100, 1000])
-            ->defaultPaginationPageOption(10);
+            ->defaultPaginationPageOption(25);
     }
 }

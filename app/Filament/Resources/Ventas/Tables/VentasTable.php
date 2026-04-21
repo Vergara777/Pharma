@@ -228,6 +228,41 @@ class VentasTable
                     })
                     ->visible(fn ($record) => $record->status === 'active' && auth()->user()->role === 'admin'),
             ])
+            ->toolbarActions([
+                \Filament\Actions\ActionGroup::make([
+                    \Filament\Actions\Action::make('exportReport')
+                        ->label('Reporte PDF')
+                        ->icon('heroicon-o-document-chart-bar')
+                        ->color('info')
+                        ->requiresConfirmation()
+                        ->modalHeading('Exportar Reporte PDF')
+                        ->modalDescription('¿Deseas descargar el reporte completo de ventas en PDF?')
+                        ->modalSubmitActionLabel('Descargar PDF')
+                        ->action(function () {
+                            $ventas = \App\Models\Ventas::all();
+                            $farmacia = \App\Models\Setting::get('pharmacy_name', config('app.name'));
+
+                            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.ventas', [
+                                'ventas' => $ventas,
+                                'farmacia' => $farmacia,
+                            ])->setPaper('a4', 'landscape');
+
+                            return response()->streamDownload(
+                                fn() => print($pdf->output()),
+                                'reporte-ventas-' . now()->format('Y-m-d') . '.pdf'
+                            );
+                        }),
+                    \Filament\Actions\ExportAction::make()
+                        ->exporter(\App\Filament\Exports\VentasExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->label('Exportar Excel')
+                        ->columnMapping(false),
+                ])
+                    ->label('Acciones')
+                    ->icon('heroicon-o-ellipsis-vertical')
+                    ->button()
+                    ->color('primary'),
+            ])
             ->defaultSort('created_at', 'desc')
             ->persistFiltersInSession()
             ->persistSortInSession()

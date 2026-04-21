@@ -11,6 +11,14 @@ use Filament\Resources\Pages\EditRecord;
 class EditProduct extends EditRecord
 {
     protected static string $resource = ProductResource::class;
+    
+    protected function getSavedNotification(): ?Notification
+    {
+        return Notification::make()
+            ->success()
+            ->title('Producto actualizado')
+            ->body('Los cambios del producto se han guardado correctamente.');
+    }
 
     protected function getHeaderActions(): array
     {

@@ -18,25 +18,25 @@ class UserInfolist
                 ImageEntry::make('avatar')
                 ->label('Foto de Perfil')
                 ->circular()
-                ->disk('public')
                 ->size(120)
-                ->columnSpan(2),
+                ->columnSpan(2)
+                ->defaultImageUrl(fn ($record) => $record->profile_photo_url)
+                ->url(fn ($record) => $record->avatar ? asset('storage/' . $record->avatar) : null),
 
                 TextEntry::make('document_type')
                 ->label('Tipo de Documento')
-                ->options([
+                ->formatStateUsing(fn ($state) => match ($state) {
                     'CC' => 'Cédula de Ciudadanía',
                     'CE' => 'Cédula de Extranjería',
                     'PA' => 'Pasaporte',
-                ])
-                ->native(true)
-                ->required()
-                ->maxLength(2),
+                    default => $state,
+                })
+                ->badge()
+                ->color('info'),
 
                 TextEntry::make('document_number')
                 ->label('Número de Documento')
-                ->required()
-                ->maxLength(20),
+                ->placeholder('N/A'),
 
                 TextEntry::make('name')
                 ->label('Nombre Completo')

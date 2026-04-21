@@ -9,6 +9,14 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateProduct extends CreateRecord
 {
     protected static string $resource = ProductResource::class;
+    
+    protected function getCreatedNotification(): ?Notification
+    {
+        return Notification::make()
+            ->success()
+            ->title('Producto agregado')
+            ->body('El producto se ha agregado correctamente al inventario.');
+    }
 
     protected function afterCreate(): void
     {

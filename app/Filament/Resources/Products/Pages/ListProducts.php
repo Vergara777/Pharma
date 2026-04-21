@@ -38,7 +38,8 @@ class ListProducts extends ListRecords
         if (auth()->user()->role === 'admin') {
             return [
                 CreateAction::make()
-                    ->icon('heroicon-o-plus-circle'),
+                    ->icon('heroicon-o-plus-circle')
+                    ->successNotificationTitle('Producto agregado'),
             ];
         }
 

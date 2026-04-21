@@ -88,9 +88,8 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     public function getFilamentAvatarUrl(): ?string
     {
         // Si tiene avatar personalizado, usarlo
-        if ($this->avatar && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->avatar)) {
-            // Usar una URL con timestamp único para evitar caché
-            return url('storage/' . $this->avatar) . '?t=' . now()->timestamp . rand(1000, 9999);
+        if ($this->avatar) {
+            return url('storage/' . $this->avatar);
         }
         
         // Fallback a las iniciales generadas por Jetstream
@@ -102,9 +101,8 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
      */
     public function getProfilePhotoUrlAttribute()
     {
-        if ($this->avatar && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->avatar)) {
-            // Usar una URL con timestamp único para evitar caché
-            return url('storage/' . $this->avatar) . '?t=' . now()->timestamp . rand(1000, 9999);
+        if ($this->avatar) {
+            return url('storage/' . $this->avatar);
         }
 
         return 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&color=7F9CF5&background=EBF4FF';

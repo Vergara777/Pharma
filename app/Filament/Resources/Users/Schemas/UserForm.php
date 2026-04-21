@@ -32,7 +32,12 @@ class UserForm
                             ])
                             ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg'])
                             ->maxSize(2048)
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->afterStateHydrated(function ($component, $record) {
+                                if ($record && $record->avatar) {
+                                    $component->state($record->avatar);
+                                }
+                            }),
                         
                         Grid::make(2)
                             ->schema([
@@ -44,8 +49,7 @@ class UserForm
                                         'CE' => 'Cédula de Extranjería',
                                         'PA' => 'Pasaporte',
                                     ])
-                                    ->required()
-                                    ->maxLength(2), 
+                                    ->required(), 
                                 TextInput::make('document_number')
                                     ->label('Número de Documento')
                                     ->required()

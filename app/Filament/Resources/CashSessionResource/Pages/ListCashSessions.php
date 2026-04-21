@@ -149,6 +149,39 @@ class ListCashSessions extends ListRecords
         }
 
         return [
+            \Filament\Actions\ActionGroup::make([
+                \Filament\Actions\Action::make('exportReport')
+                    ->label('Reporte PDF')
+                    ->icon('heroicon-o-document-chart-bar')
+                    ->color('info')
+                    ->requiresConfirmation()
+                    ->modalHeading('Exportar Reporte PDF')
+                    ->modalDescription('¿Deseas descargar el historial de cajas en PDF?')
+                    ->modalSubmitActionLabel('Descargar PDF')
+                    ->action(function () {
+                        $sessions = \App\Models\CashSession::orderBy('created_at', 'desc')->get();
+                        $farmacia = \App\Models\Setting::get('pharmacy_name', config('app.name'));
+
+                        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.cajas', [
+                            'sessions' => $sessions,
+                            'farmacia' => $farmacia,
+                        ])->setPaper('a4', 'landscape');
+
+                        return response()->streamDownload(
+                            fn() => print($pdf->output()),
+                            'reporte-cajas-' . now()->format('Y-m-d') . '.pdf'
+                        );
+                    }),
+                \Filament\Actions\ExportAction::make()
+                    ->exporter(\App\Filament\Exports\CashSessionExporter::class)
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->label('Exportar Excel')
+                    ->columnMapping(false),
+            ])
+                ->label('Acciones')
+                ->icon('heroicon-o-ellipsis-vertical')
+                ->button()
+                ->color('primary'),
             Action::make('open_session')
                 ->label('Abrir Caja')
                 ->icon('heroicon-o-lock-open')

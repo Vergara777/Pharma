@@ -32,12 +32,15 @@ class Profile extends Page implements HasForms
     // protected static UnitEnum|string|null $navigationGroup = 'Configuración';
 
     public ?array $data = [];
+    public ?string $currentAvatar = null;
     
     protected string $view = 'filament.pages.profile';
 
     public function mount(): void
     {
         $user = auth()->user();
+        
+        $this->currentAvatar = $user->avatar;
         
         $this->form->fill([
             'name' => $user->name,
@@ -71,7 +74,16 @@ class Profile extends Page implements HasForms
                             ])
                             ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg'])
                             ->maxSize(2048)
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->imagePreviewHeight('200')
+                            ->downloadable()
+                            ->openable()
+                            ->previewable(true)
+                            ->imageCropAspectRatio('1:1')
+                            ->panelAspectRatio('1:1')
+                            ->panelLayout('compact circle')
+                            ->formatStateUsing(fn ($state) => $state ?? auth()->user()->avatar)
+                            ->dehydrated(true),
                         
                         Grid::make(2)
                             ->schema([
@@ -204,6 +216,10 @@ class Profile extends Page implements HasForms
         // Solo actualizar avatar si se proporcionó uno nuevo
         if (isset($data['avatar']) && filled($data['avatar'])) {
             $updateData['avatar'] = $data['avatar'];
+            $this->currentAvatar = $data['avatar'];
+        } elseif ($this->currentAvatar) {
+            // Mantener el avatar actual si no se subió uno nuevo
+            $updateData['avatar'] = $this->currentAvatar;
         }
 
         // Solo actualizar contraseña si se proporcionó una nueva
@@ -226,6 +242,7 @@ class Profile extends Page implements HasForms
             ->send();
             
         // Recargar el formulario con los datos actualizados
+        $this->currentAvatar = $user->avatar;
         $this->form->fill([
             'name' => $user->name,
             'email' => $user->email,

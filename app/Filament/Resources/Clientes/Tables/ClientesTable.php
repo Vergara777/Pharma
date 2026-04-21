@@ -18,59 +18,61 @@ class ClientesTable
     {
         return $table
             ->columns([
-                TextColumn::make('name')
-                    ->label('Nombre')
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(),
-                TextColumn::make('document')
-                    ->label('Documento')
-                    ->searchable()
-                    ->placeholder('-')
-                    ->toggleable(),
-                TextColumn::make('email')
-                    ->label('Email')
-                    ->searchable()
-                    ->placeholder('-')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('phone')
-                    ->label('Teléfono')
-                    ->searchable()
-                    ->placeholder('-')
-                    ->toggleable(),
-                TextColumn::make('facturas_count')
-                    ->label('Facturas')
-                    ->counts('facturas')
-                    ->badge()
-                    ->color('success')
-                    ->sortable()
-                    ->toggleable(),
-                TextColumn::make('ventas_count')
-                    ->label('Ventas')
-                    ->counts('ventas')
-                    ->badge()
-                    ->color('info')
-                    ->sortable()
-                    ->toggleable(),
-                TextColumn::make('address')
-                    ->label('Dirección')
-                    ->searchable()
-                    ->placeholder('-')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                IconColumn::make('is_active')
-                    ->label('Activo')
-                    ->boolean()
-                    ->toggleable(),
-                TextColumn::make('created_at')
-                    ->label('Creado')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->label('Actualizado')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                \Filament\Tables\Columns\Layout\Split::make([
+                    \Filament\Tables\Columns\Layout\Stack::make([
+                        TextColumn::make('name')
+                            ->label('Nombre')
+                            ->weight('bold')
+                            ->searchable()
+                            ->sortable(),
+                        TextColumn::make('document')
+                            ->label('Documento')
+                            ->icon('heroicon-m-identification')
+                            ->color('gray')
+                            ->searchable()
+                            ->placeholder('Sin documento'),
+                    ])->space(1),
+
+                    \Filament\Tables\Columns\Layout\Stack::make([
+                        TextColumn::make('phone')
+                            ->label('Teléfono')
+                            ->icon('heroicon-m-phone')
+                            ->searchable()
+                            ->placeholder('Sin teléfono'),
+                        TextColumn::make('email')
+                            ->label('Email')
+                            ->icon('heroicon-m-envelope')
+                            ->searchable()
+                            ->placeholder('Sin correo'),
+                    ])->space(1),
+
+                    \Filament\Tables\Columns\Layout\Stack::make([
+                        TextColumn::make('facturas_count')
+                            ->label('Facturas')
+                            ->counts('facturas')
+                            ->badge()
+                            ->color('success')
+                            ->sortable(),
+                        TextColumn::make('ventas_count')
+                            ->label('Ventas')
+                            ->counts('ventas')
+                            ->badge()
+                            ->color('info')
+                            ->sortable(),
+                    ])->space(1),
+
+                    \Filament\Tables\Columns\Layout\Stack::make([
+                        IconColumn::make('is_active')
+                            ->label('Activo')
+                            ->boolean(),
+                        TextColumn::make('address')
+                            ->label('Dirección')
+                            ->icon('heroicon-m-map-pin')
+                            ->color('gray')
+                            ->searchable()
+                            ->placeholder('Sin dirección'),
+                    ])->space(1),
+                ])->from('md'),
             ])
             ->filters([
                 SelectFilter::make('is_active')
@@ -131,11 +133,107 @@ class ClientesTable
             ])
             ->recordActions([
                 ViewAction::make()
-                    ->url(fn ($record): string => route('filament.admin.resources.clientes.view', ['record' => $record])),
+                    ->url(fn ($record): string => route('filament.admin.resources.clientes.view', ['record' => $record]))
+                    ->color('gray'),
                 EditAction::make()
-                    ->visible(fn () => auth()->user()->role === 'admin'),
+                    ->visible(fn () => auth()->user()->role === 'admin')
+                    ->color('warning'),
             ])
             ->toolbarActions([
+                \Filament\Actions\ActionGroup::make([
+                    \Filament\Actions\Action::make('downloadTemplate')
+                        ->label('Descargar Plantilla')
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->color('gray')
+                        ->action(function () {
+                            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+                            $sheet = $spreadsheet->getActiveSheet();
+
+                            $headers = ['name', 'document', 'email', 'phone', 'address', 'is_active'];
+
+                            $col = 'A';
+                            foreach ($headers as $header) {
+                                $sheet->setCellValue($col . '1', $header);
+                                $col++;
+                            }
+
+                            $sheet->getStyle('A1:F1')->getFont()->setBold(true);
+                            $sheet->getStyle('A1:F1')->getFill()
+                                ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                                ->getStartColor()->setRGB('4F46E5');
+                            $sheet->getStyle('A1:F1')->getFont()->getColor()->setRGB('FFFFFF');
+
+                            foreach (range('A', 'F') as $col) {
+                                $sheet->getColumnDimension($col)->setAutoSize(true);
+                            }
+
+                            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+                            $filePath = storage_path('app/private/plantilla-clientes.xlsx');
+                            $writer->save($filePath);
+
+                            return response()->download($filePath, 'plantilla-clientes.xlsx', [
+                                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                            ])->deleteFileAfterSend(true);
+                        }),
+                    \Filament\Actions\Action::make('exportReport')
+                        ->label('Reporte PDF')
+                        ->icon('heroicon-o-document-chart-bar')
+                        ->color('info')
+                        ->requiresConfirmation()
+                        ->modalHeading('Exportar Reporte PDF')
+                        ->modalDescription('¿Deseas descargar el reporte completo de clientes en PDF?')
+                        ->modalSubmitActionLabel('Descargar PDF')
+                        ->action(function () {
+                            $clientes = \App\Models\Cliente::all();
+                            $farmacia = \App\Models\Setting::get('pharmacy_name', config('app.name'));
+
+                            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.clientes', [
+                                'clientes' => $clientes,
+                                'farmacia' => $farmacia,
+                            ])->setPaper('a4', 'landscape');
+
+                            return response()->streamDownload(
+                                fn() => print($pdf->output()),
+                                'reporte-clientes-' . now()->format('Y-m-d') . '.pdf'
+                            );
+                        }),
+                    \Filament\Actions\ExportAction::make()
+                        ->exporter(\App\Filament\Exports\ClienteExporter::class)
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->label('Exportar Excel')
+                        ->columnMapping(false),
+                    \Filament\Actions\Action::make('importExcel')
+                        ->label('Importar Excel')
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('success')
+                        ->form([
+                            \Filament\Forms\Components\FileUpload::make('file')
+                                ->label('Archivo Excel')
+                                ->disk('public')
+                                ->directory('imports')
+                                ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'])
+                                ->required(),
+                        ])
+                        ->action(function (array $data) {
+                            \Maatwebsite\Excel\Facades\Excel::import(
+                                new \App\Imports\ClientesImport,
+                                \Illuminate\Support\Facades\Storage::disk('public')->path($data['file'])
+                            );
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Importación exitosa')
+                                ->body('Los clientes fueron importados correctamente')
+                                ->success()
+                                ->send();
+                        })
+                        ->modalHeading('Importar Clientes desde Excel')
+                        ->modalSubmitActionLabel('Importar')
+                        ->successNotificationTitle('Clientes agregados'),
+                ])
+                    ->label('Acciones')
+                    ->icon('heroicon-o-ellipsis-vertical')
+                    ->button()
+                    ->color('primary'),
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
