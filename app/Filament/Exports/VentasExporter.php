@@ -19,16 +19,29 @@ class VentasExporter extends Exporter
                 ->label('ID'),
             ExportColumn::make('invoice_number')
                 ->label('N° Factura'),
-            ExportColumn::make('customer_name')
+            ExportColumn::make('created_at')
+                ->label('Fecha y Hora')
+                ->dateTime(),
+            ExportColumn::make('cliente.name')
                 ->label('Cliente'),
+            ExportColumn::make('productos_detalle')
+                ->label('Productos (Cant.)')
+                ->getStateUsing(fn ($record) => $record->items->map(fn ($item) => ($item->product?->name ?? 'Producto Desconocido') . " ({$item->qty})")->join(' | ')),
+            ExportColumn::make('subtotal')
+                ->label('Subtotal')
+                ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.')),
+            ExportColumn::make('tax_amount')
+                ->label('IVA')
+                ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.')),
             ExportColumn::make('grand_total')
-                ->label('Total'),
+                ->label('Total Venta')
+                ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.')),
+            ExportColumn::make('paymentMethod.name')
+                ->label('Método Pago'),
             ExportColumn::make('status')
                 ->label('Estado'),
             ExportColumn::make('user_name')
                 ->label('Vendedor'),
-            ExportColumn::make('created_at')
-                ->label('Fecha'),
         ];
     }
 

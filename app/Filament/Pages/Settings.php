@@ -59,22 +59,26 @@ class Settings extends Page implements HasForms
                     ->schema([
                         TextInput::make('pharmacy_name')
                             ->label('Nombre de la Farmacia')
+                            ->placeholder('Nombre de la Farmacia')
                             ->required()
                             ->maxLength(255),
                         
                         Textarea::make('pharmacy_address')
                             ->label('Dirección')
+                            ->placeholder('Dirección')
                             ->rows(3)
                             ->maxLength(500),
                         
                         TextInput::make('pharmacy_phone')
                             ->label('Teléfono')
                             ->tel()
+                            ->placeholder('Teléfono')
                             ->maxLength(20),
                         
                         TextInput::make('pharmacy_email')
                             ->label('Email')
                             ->email()
+                            ->placeholder('farmacia@example.com')
                             ->maxLength(255),
                     ])
                     ->columns(2),
@@ -90,6 +94,7 @@ class Settings extends Page implements HasForms
                         
                         TextInput::make('default_stock_minimum')
                             ->label('Stock Mínimo por Defecto')
+                            ->placeholder('20')
                             ->helperText('Valor predeterminado para nuevos productos')
                             ->numeric()
                             ->default(20)
@@ -97,6 +102,7 @@ class Settings extends Page implements HasForms
                         
                         Select::make('currency')
                             ->label('Moneda del Sistema')
+                            ->placeholder('COP')
                             ->helperText('Símbolo de moneda para mostrar precios')
                             ->options([
                                 'COP' => '🇨🇴 Peso Colombiano (COP) - $',
@@ -125,6 +131,7 @@ class Settings extends Page implements HasForms
                         
                         TextInput::make('expiration_alert_days')
                             ->label('Días de Anticipación')
+                            ->placeholder('30')
                             ->helperText('Notificar cuando falten X días para vencer')
                             ->numeric()
                             ->default(30)

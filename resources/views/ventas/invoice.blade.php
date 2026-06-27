@@ -301,6 +301,9 @@
             <p><strong>Recibido:</strong> <span>${{ number_format($venta->amount_received, 0, ',', '.') }}</span></p>
             <p><strong>Cambio:</strong> <span>${{ number_format($venta->change_amount, 0, ',', '.') }}</span></p>
             @endif
+            @if($venta->cash_box)
+            <p><strong>Caja:</strong> <span>{{ $venta->cash_box->name }}</span></p>
+            @endif
         </div>
         
         <!-- Footer -->

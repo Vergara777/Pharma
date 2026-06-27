@@ -97,8 +97,12 @@ class ProductForm
                     ->prefixIcon('heroicon-m-banknotes')
                     ->default(0)
                     ->placeholder('15.000')
-                    ->formatStateUsing(fn ($state) => $state ? number_format($state, 0, '', '.') : '0')
-                    ->dehydrateStateUsing(fn ($state) => $state ? (int) str_replace('.', '', $state) : 0),
+                    ->extraAlpineAttributes([
+                        'x-mask:dynamic' => "\$money(\$input, '.', ',', 0)",
+                        'x-on:focus' => "\$el.value == 0 ? \$el.value = '' : null",
+                    ])
+                    ->formatStateUsing(fn ($state) => $state ? number_format((float) str_replace(['.', ','], '', $state), 0, '', '.') : '0')
+                    ->dehydrateStateUsing(fn ($state) => $state ? (int) str_replace(['.', ','], '', $state) : 0),
                     
                 TextInput::make('price')
                     ->label('Precio de Venta')
@@ -107,8 +111,12 @@ class ProductForm
                     ->prefixIcon('heroicon-m-currency-dollar')
                     ->default(0)
                     ->placeholder('25.000')
-                    ->formatStateUsing(fn ($state) => $state ? number_format($state, 0, '', '.') : '0')
-                    ->dehydrateStateUsing(fn ($state) => $state ? (int) str_replace('.', '', $state) : 0),
+                    ->extraAlpineAttributes([
+                        'x-mask:dynamic' => "\$money(\$input, '.', ',', 0)",
+                        'x-on:focus' => "\$el.value == 0 ? \$el.value = '' : null",
+                    ])
+                    ->formatStateUsing(fn ($state) => $state ? number_format((float) str_replace(['.', ','], '', $state), 0, '', '.') : '0')
+                    ->dehydrateStateUsing(fn ($state) => $state ? (int) str_replace(['.', ','], '', $state) : 0),
 
                 // Unidades y Presentaciones
                 TextInput::make('unit_name')
@@ -138,18 +146,26 @@ class ProductForm
                     ->prefix('$')
                     ->prefixIcon('heroicon-m-banknotes')
                     ->placeholder('2.500')
+                    ->extraAlpineAttributes([
+                        'x-mask:dynamic' => "\$money(\$input, '.', ',', 0)",
+                        'x-on:focus' => "\$el.value == 0 ? \$el.value = '' : null",
+                    ])
                     ->helperText('Si se vende suelto')
-                    ->formatStateUsing(fn ($state) => $state ? number_format($state, 0, '', '.') : '')
-                    ->dehydrateStateUsing(fn ($state) => $state ? (int) str_replace('.', '', $state) : null),
+                    ->formatStateUsing(fn ($state) => $state ? number_format((float) str_replace(['.', ','], '', $state), 0, '', '.') : '0')
+                    ->dehydrateStateUsing(fn ($state) => $state ? (int) str_replace(['.', ','], '', $state) : 0),
                     
                 TextInput::make('price_package')
                     ->label('Precio Presentación')
                     ->prefix('$')
                     ->prefixIcon('heroicon-m-banknotes')
                     ->placeholder('25.000')
+                    ->extraAlpineAttributes([
+                        'x-mask:dynamic' => "\$money(\$input, '.', ',', 0)",
+                        'x-on:focus' => "\$el.value == 0 ? \$el.value = '' : null",
+                    ])
                     ->helperText('Si se vende completo')
-                    ->formatStateUsing(fn ($state) => $state ? number_format($state, 0, '', '.') : '')
-                    ->dehydrateStateUsing(fn ($state) => $state ? (int) str_replace('.', '', $state) : null),
+                    ->formatStateUsing(fn ($state) => $state ? number_format((float) str_replace(['.', ','], '', $state), 0, '', '.') : '0')
+                    ->dehydrateStateUsing(fn ($state) => $state ? (int) str_replace(['.', ','], '', $state) : 0),
                     
                 Select::make('supplier_id')
                     ->label('Proveedor')
@@ -182,8 +198,10 @@ class ProductForm
                     ->required()
                     ->numeric()
                     ->minValue(0)
-                    ->placeholder('Ingresa la cantidad')
-                    ->prefixIcon('heroicon-m-circle-stack'),
+                    ->default(0)
+                    ->placeholder('0')
+                    ->prefixIcon('heroicon-m-circle-stack')
+                    ->dehydrateStateUsing(fn ($state) => $state ?? 0),
                     
                 DatePicker::make('expires_at')
                     ->label('Fecha de Vencimiento')

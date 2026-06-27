@@ -26,6 +26,7 @@
         <thead>
             <tr>
                 <th>N° Factura</th>
+                <th>Producto</th>
                 <th>Cliente</th>
                 <th>Vendedor</th>
                 <th>Estado</th>
@@ -38,6 +39,7 @@
             @foreach($ventas as $venta)
             <tr>
                 <td>{{ $venta->invoice_number }}</td>
+                <td>{{ $venta->product_id }}</td>
                 <td>{{ $venta->customer_name ?? 'Cliente General' }}</td>
                 <td>{{ $venta->user_name }}</td>
                 <td>{{ $venta->status === 'active' ? 'Activa' : ($venta->status === 'cancelled' ? 'Cancelada' : 'Devuelta') }}</td>

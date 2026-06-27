@@ -34,7 +34,7 @@ class VentaForm
                                         self::addItemToCart($state, $set, $get, 'sku', $livewire);
                                         $set('barcode_search', null);
                                     })
-                                    ->suffixIcon('heroicon-m-qr-code')
+                                    ->suffixIcon('heroicon-o-qr-code')
                                     ->columnSpan(5),
                                 
                                 Select::make('manual_search')
@@ -234,6 +234,7 @@ class VentaForm
                                     ->required()
                                     ->disabled(fn (callable $get) => $get('anonymous_invoice'))
                                     ->live(onBlur: true)
+                                    ->prefixIcon('heroicon-o-user')
                                     ->afterStateUpdated(function ($state, callable $get, callable $set) {
                                         // Si hay un cliente seleccionado y se modifica el nombre, deseleccionarlo
                                         if ($get('cliente_id')) {
@@ -247,11 +248,13 @@ class VentaForm
                                 TextInput::make('customer_phone')
                                     ->placeholder('Ej: 300 123 4567')
                                     ->label('Teléfono')
+                                    ->prefixIcon('heroicon-o-phone')
                                     ->disabled(fn (callable $get) => $get('anonymous_invoice')),
                                 TextInput::make('customer_email')
                                     ->placeholder('Ej: juan@email.com')
                                     ->label('Correo Electrónico')
                                     ->email()
+                                    ->prefixIcon('heroicon-o-envelope')
                                     ->disabled(fn (callable $get) => $get('anonymous_invoice'))
                                     ->dehydrated(),
                             ]),
@@ -260,11 +263,13 @@ class VentaForm
                                 TextInput::make('invoice_document')
                                     ->placeholder('Ej: 123456789')
                                     ->label('Documento / NIT')
+                                    ->prefixIcon('heroicon-o-identification')
                                     ->disabled(fn (callable $get) => $get('anonymous_invoice'))
                                     ->dehydrated(),
                                 TextInput::make('invoice_address')
                                     ->placeholder('Ej: Calle 123 # 45 - 67')
                                     ->label('Dirección')
+                                    ->prefixIcon('heroicon-o-map-pin')
                                     ->columnSpan(2)
                                     ->disabled(fn (callable $get) => $get('anonymous_invoice'))
                                     ->dehydrated(),
@@ -323,6 +328,10 @@ class VentaForm
                                     ->label('Monto Recibido')
                                     ->prefix('$')
                                     ->placeholder('Ej: 50.000')
+                                    ->extraAlpineAttributes([
+                                        'x-mask:dynamic' => "\$money(\$input, '.', ',', 0)",
+                                        'x-on:focus' => "\$el.value == 0 ? \$el.value = '' : null",
+                                    ])
                                     ->live(onBlur: true)
                                     ->readOnly(fn (callable $get) => $get('exact_amount'))
                                     ->required(fn (callable $get) => self::isCash($get))
@@ -330,8 +339,6 @@ class VentaForm
                                     ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                         if ($get('exact_amount')) return;
                                         $cleanState = (float) str_replace(['.', ','], '', $state);
-                                        $formatted = number_format($cleanState, 0, ',', '.');
-                                        $set('amount_received', $formatted);
                                         self::calculateChange($set, $cleanState, (float) $get('grand_total'));
                                     })
                                     ->extraInputAttributes(function (callable $get) {

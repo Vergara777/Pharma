@@ -289,7 +289,7 @@ class ProductsTable
                     ->modal()
                     ->modalWidth('3xl')
                     ->color('warning')
-                    ->successNotificationTitle('Producto actualizado')
+                    ->successNotificationTitle('Producto actualizado correctamente')
                     ->visible(fn() => auth()->user()->role === 'admin'),
                 RecordAction::make('addToCart')
                     ->label('Agregar')
@@ -396,8 +396,8 @@ class ProductsTable
                         $record->update(['status' => 'active']);
 
                         \Filament\Notifications\Notification::make()
-                            ->title('Producto activado')
-                            ->body('El producto ha sido activado exitosamente')
+                            ->title('Producto activado correctamente')
+                            ->body('El producto ha sido activado correctamente')
                             ->success()
                             ->color('success')
                             ->duration(5000)
@@ -408,6 +408,9 @@ class ProductsTable
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    \Filament\Actions\ExportAction::make()
+                        ->exporter(\App\Filament\Exports\ProductExporter::class)
+                        ->label('Exportar Productos seleccionados'),
                 ])
                     ->visible(fn() => auth()->user()->role === 'admin'),
             ])

@@ -36,12 +36,14 @@ class LoteForm
                                         ->required()
                                         ->unique(ignoreRecord: true)
                                         ->maxLength(100)
-                                        ->placeholder('LOT-2024-001'),
+                                        ->placeholder('LOT-2024-001')
+                                        ->prefixIcon('heroicon-m-hashtag'),
                                     
                                     TextInput::make('lote_fabricante')
                                         ->label('Lote del Fabricante')
                                         ->maxLength(100)
-                                        ->placeholder('Lote original del fabricante'),
+                                        ->placeholder('Lote original del fabricante')
+                                        ->prefixIcon('heroicon-m-tag'),
                                 ])
                                 ->columns(3),
 
@@ -53,22 +55,27 @@ class LoteForm
                                         ->numeric()
                                         ->default(0)
                                         ->minValue(0)
+                                        ->extraInputAttributes(['data-zero-default' => 'true'])
                                         ->suffix('unidades'),
                                     
                                     TextInput::make('cantidad_actual')
                                         ->label('Cantidad Actual')
-                                        ->required()
+                                        ->required('La cantidad actual es obligatoria.')
                                         ->numeric()
+                                        ->placeholder('0')
                                         ->default(0)
                                         ->minValue(0)
+                                        ->extraInputAttributes(['data-zero-default' => 'true'])
                                         ->suffix('unidades')
                                         ->helperText('Se actualizará automáticamente con las ventas'),
                                     
                                     TextInput::make('cantidad_minima_alerta')
                                         ->label('Stock Mínimo para Alerta')
                                         ->numeric()
-                                        ->default(10)
+                                        ->default(0)
+                                        ->placeholder('10')
                                         ->minValue(0)
+                                        ->extraInputAttributes(['data-zero-default' => 'true'])
                                         ->suffix('unidades'),
                                 ])
                                 ->columns(3),
@@ -78,26 +85,31 @@ class LoteForm
                                     DatePicker::make('fecha_fabricacion')
                                         ->label('Fecha de Fabricación')
                                         ->displayFormat('d/m/Y')
+                                        ->placeholder('dd/mm/yyyy')
                                         ->native(false),
                                     
                                     DatePicker::make('fecha_vencimiento')
                                         ->label('Fecha de Vencimiento')
-                                        ->required()
+                                        ->required('La fecha de vencimiento es obligatoria.')
                                         ->displayFormat('d/m/Y')
+                                        ->placeholder('dd/mm/yyyy')
                                         ->native(false)
                                         ->minDate(now()),
                                     
                                     DatePicker::make('fecha_ingreso')
                                         ->label('Fecha de Ingreso')
-                                        ->displayFormat('d/m/Y H:i')
+                                        ->displayFormat('d/m/Y')
+                                        ->placeholder('dd/mm/yyyy')
                                         ->native(false)
                                         ->default(now()),
                                     
                                     TextInput::make('dias_alerta_vencimiento')
                                         ->label('Días de Alerta antes de Vencer')
                                         ->numeric()
-                                        ->default(90)
-                                        ->minValue(1)
+                                        ->placeholder('0')
+                                        ->default(0)
+                                        ->minValue(0)
+                                        ->extraInputAttributes(['data-zero-default' => 'true'])
                                         ->suffix('días'),
                                 ])
                                 ->columns(2),
@@ -119,6 +131,7 @@ class LoteForm
                                     Textarea::make('motivo_bloqueo')
                                         ->label('Motivo de Bloqueo')
                                         ->rows(2)
+                                        ->placeholder('Motivo de bloqueo')
                                         ->visible(fn ($get) => $get('estado') === 'bloqueado')
                                         ->columnSpanFull(),
                                 ])
@@ -133,22 +146,33 @@ class LoteForm
                                 ->schema([
                                     TextInput::make('costo_unitario')
                                         ->label('Costo Unitario ($)')
-                                        ->required()
+                                        ->required('El costo unitario es obligatorio.')
                                         ->default(0)
                                         ->minValue(0)
                                         ->placeholder('4.000')
-                                        ->helperText('Puedes usar puntos como separador de miles. Ej: 4.000 = $4.000')
-                                        ->formatStateUsing(fn ($state) => $state ? number_format($state, 0, '', '.') : '0')
-                                        ->dehydrateStateUsing(fn ($state) => $state ? (int) str_replace('.', '', $state) : 0),
-                                    
+                                        ->prefixIcon('heroicon-o-banknotes')
+                                        ->numeric()
+                                        ->inputMode('numeric')
+                                        ->extraInputAttributes([
+                                            'data-currency-input' => 'true',
+                                            'data-zero-default' => 'true',
+                                        ])
+                                        ->helperText('Ingresa el valor sin puntos. Ejemplo: 4000')
+                                        ->dehydrateStateUsing(fn ($state) => (int) preg_replace('/[^0-9]/', '', $state ?? '0')),
                                     TextInput::make('precio_venta_sugerido')
                                         ->label('Precio de Venta Sugerido ($)')
+                                        ->required('El precio de venta es obligatorio.')
                                         ->default(0)
                                         ->minValue(0)
                                         ->placeholder('5.000')
-                                        ->helperText('Puedes usar puntos como separador de miles. Ej: 5.000 = $5.000')
-                                        ->formatStateUsing(fn ($state) => $state ? number_format($state, 0, '', '.') : '0')
-                                        ->dehydrateStateUsing(fn ($state) => $state ? (int) str_replace('.', '', $state) : 0),
+                                        ->prefixIcon('heroicon-o-currency-dollar')
+                                        ->inputMode('numeric')
+                                        ->extraInputAttributes([
+                                            'data-currency-input' => 'true',
+                                            'data-zero-default' => 'true',
+                                        ])
+                                        ->helperText('Ingresa el valor sin puntos. Ejemplo: 5000')
+                                        ->dehydrateStateUsing(fn ($state) => $state ? (int) str_replace(['.', ','], '', $state) : 0),
                                     
                                     TextInput::make('descuento_proveedor')
                                         ->label('Descuento del Proveedor')
@@ -156,6 +180,7 @@ class LoteForm
                                         ->suffix('%')
                                         ->default(0)
                                         ->minValue(0)
+                                        ->extraInputAttributes(['data-zero-default' => 'true'])
                                         ->maxValue(100),
                                     
                                     TextInput::make('iva_porcentaje')
@@ -164,6 +189,7 @@ class LoteForm
                                         ->suffix('%')
                                         ->default(0)
                                         ->minValue(0)
+                                        ->extraInputAttributes(['data-zero-default' => 'true'])
                                         ->maxValue(100),
                                 ])
                                 ->columns(2),
@@ -210,7 +236,8 @@ class LoteForm
                                     Toggle::make('requiere_receta')
                                         ->label('Requiere Receta Médica')
                                         ->default(false)
-                                        ->inline(false),
+                                        ->inline(false)
+                                        ->helperText('Producto requiere receta médica'),
                                     
                                     Toggle::make('es_muestra_medica')
                                         ->label('Es Muestra Médica')
@@ -224,12 +251,13 @@ class LoteForm
                                 ->schema([
                                     TextInput::make('temperatura_almacenamiento')
                                         ->label('Temperatura de Almacenamiento')
-                                        ->placeholder('2-8°C o Temperatura ambiente')
-                                        ->maxLength(50),
+                                        ->maxLength(50)
+                                        ->placeholder('2-8°C o Temperatura ambiente'),
                                     
                                     Toggle::make('requiere_cadena_frio')
                                         ->label('Requiere Cadena de Frío')
                                         ->default(false)
+                                        ->helperText('Requiere cadena de frío')
                                         ->inline(false),
                                     
                                     TextInput::make('ubicacion_fisica')
@@ -255,6 +283,7 @@ class LoteForm
                                     Textarea::make('notas')
                                         ->label('Notas Generales')
                                         ->rows(3)
+                                        ->placeholder('Notas adicionales sobre el lote')
                                         ->columnSpanFull(),
                                 ]),
                         ]),

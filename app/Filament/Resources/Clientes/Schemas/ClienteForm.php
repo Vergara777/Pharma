@@ -13,16 +13,32 @@ class ClienteForm
         return $schema
             ->components([
                 TextInput::make('name')
-                    ->required(),
-                TextInput::make('document'),
+                    ->label('Nombre del Cliente')
+                    ->required()
+                    ->placeholder('Ej: Juan Pérez')
+                    ->prefixIcon('heroicon-o-user'),
+                TextInput::make('document')
+                    ->label('Documento / NIT')
+                    ->placeholder('Ej: 123456789')
+                    ->prefixIcon('heroicon-o-identification'),
                 TextInput::make('email')
-                    ->label('Email address')
-                    ->email(),
+                    ->label('Correo Electrónico')
+                    ->email()
+                    ->placeholder('Ej: cliente@email.com')
+                    ->prefixIcon('heroicon-o-envelope'),
                 TextInput::make('phone')
-                    ->tel(),
-                TextInput::make('address'),
+                    ->label('Teléfono')
+                    ->tel()
+                    ->placeholder('Ej: 300 123 4567')
+                    ->prefixIcon('heroicon-o-phone'),
+                TextInput::make('address')
+                    ->label('Dirección')
+                    ->placeholder('Ej: Calle 123 # 45 - 67')
+                    ->prefixIcon('heroicon-o-map-pin'),
                 Toggle::make('is_active')
-                    ->required(),
+                    ->required()
+                    ->onColor('success')
+                    ->offColor('danger'),
             ]);
     }
 }

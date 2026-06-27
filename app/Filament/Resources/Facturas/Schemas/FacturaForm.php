@@ -24,7 +24,9 @@ class FacturaForm
                             ->label('Número de Factura')
                             ->default(fn () => \App\Models\Factura::generateInvoiceNumber())
                             ->required()
-                            ->unique(ignoreRecord: true),
+                            ->unique(ignoreRecord: true)
+                            ->placeholder('FACT-001')
+                            ->prefixIcon('heroicon-o-hashtag'),
                         
                         Select::make('cliente_id')
                             ->label('Cliente')
@@ -35,27 +37,40 @@ class FacturaForm
                             ->createOptionForm([
                                 TextInput::make('name')
                                     ->label('Nombre')
-                                    ->required(),
+                                    ->required()
+                                    ->placeholder('Nombre del cliente')
+                                    ->prefixIcon('heroicon-o-user'),
                                 TextInput::make('document')
-                                    ->label('Documento'),
+                                    ->label('Documento')
+                                    ->placeholder('123456789')
+                                    ->prefixIcon('heroicon-o-identification'),
                                 TextInput::make('email')
                                     ->label('Email')
-                                    ->email(),
+                                    ->email()
+                                    ->placeholder('cliente@correo.com')
+                                    ->prefixIcon('heroicon-o-envelope'),
                                 TextInput::make('phone')
                                     ->label('Teléfono')
-                                    ->tel(),
+                                    ->tel()
+                                    ->placeholder('3001234567')
+                                    ->prefixIcon('heroicon-o-phone'),
                                 Textarea::make('address')
-                                    ->label('Dirección'),
+                                    ->label('Dirección')
+                                    ->placeholder('Calle 123 # 45-67'),
                             ]),
                         
                         DatePicker::make('fecha_emision')
                             ->label('Fecha de Emisión')
                             ->default(now())
-                            ->required(),
+                            ->required()
+                            ->native(false)
+                            ->prefixIcon('heroicon-m-calendar'),
                         
                         DatePicker::make('fecha_vencimiento')
                             ->label('Fecha de Vencimiento')
-                            ->after('fecha_emision'),
+                            ->after('fecha_emision')
+                            ->native(false)
+                            ->prefixIcon('heroicon-m-calendar-days'),
                         
                         Select::make('status')
                             ->label('Estado')
@@ -138,28 +153,48 @@ class FacturaForm
                     ->schema([
                         TextInput::make('subtotal')
                             ->label('Subtotal')
-                            ->numeric()
                             ->prefix('$')
                             ->default(0)
-                            ->required(),
+                            ->required()
+                            ->extraAlpineAttributes([
+                                'x-mask:dynamic' => "\$money(\$input, '.', ',', 0)",
+                                'x-on:focus' => "\$el.value == 0 ? \$el.value = '' : null",
+                            ])
+                            ->formatStateUsing(fn ($state) => $state ? number_format((float) str_replace(['.', ','], '', $state), 0, '', '.') : '0')
+                            ->dehydrateStateUsing(fn ($state) => $state ? (int) str_replace(['.', ','], '', $state) : 0),
                         
                         TextInput::make('tax')
                             ->label('Impuesto')
-                            ->numeric()
                             ->prefix('$')
-                            ->default(0),
+                            ->default(0)
+                            ->extraAlpineAttributes([
+                                'x-mask:dynamic' => "\$money(\$input, '.', ',', 0)",
+                                'x-on:focus' => "\$el.value == 0 ? \$el.value = '' : null",
+                            ])
+                            ->formatStateUsing(fn ($state) => $state ? number_format((float) str_replace(['.', ','], '', $state), 0, '', '.') : '0')
+                            ->dehydrateStateUsing(fn ($state) => $state ? (int) str_replace(['.', ','], '', $state) : 0),
                         
                         TextInput::make('discount')
                             ->label('Descuento')
-                            ->numeric()
                             ->prefix('$')
-                            ->default(0),
+                            ->default(0)
+                            ->extraAlpineAttributes([
+                                'x-mask:dynamic' => "\$money(\$input, '.', ',', 0)",
+                                'x-on:focus' => "\$el.value == 0 ? \$el.value = '' : null",
+                            ])
+                            ->formatStateUsing(fn ($state) => $state ? number_format((float) str_replace(['.', ','], '', $state), 0, '', '.') : '0')
+                            ->dehydrateStateUsing(fn ($state) => $state ? (int) str_replace(['.', ','], '', $state) : 0),
                         
                         TextInput::make('total')
                             ->label('Total')
-                            ->numeric()
                             ->prefix('$')
-                            ->required(),
+                            ->required()
+                            ->extraAlpineAttributes([
+                                'x-mask:dynamic' => "\$money(\$input, '.', ',', 0)",
+                                'x-on:focus' => "\$el.value == 0 ? \$el.value = '' : null",
+                            ])
+                            ->formatStateUsing(fn ($state) => $state ? number_format((float) str_replace(['.', ','], '', $state), 0, '', '.') : '0')
+                            ->dehydrateStateUsing(fn ($state) => $state ? (int) str_replace(['.', ','], '', $state) : 0),
                     ])
                     ->columns(4),
                 

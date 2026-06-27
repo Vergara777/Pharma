@@ -13,20 +13,34 @@ class SupplierForm
         return $schema
             ->components([
                 TextInput::make('name')
-                    ->required(),
+                    ->label('Nombre del Proveedor')
+                    ->required()
+                    ->placeholder('Distribuidora Pharma S.A.S')
+                    ->prefixIcon('heroicon-m-user'),
                 TextInput::make('phone')
-                    ->tel(),
+                    ->label('Teléfono')
+                    ->tel()
+                    ->placeholder('300 123 4567')
+                    ->prefixIcon('heroicon-m-phone'),
                 TextInput::make('email')
-                    ->label('Email address')
-                    ->email(),
+                    ->label('Correo Electrónico')
+                    ->email()
+                    ->placeholder('contacto@proveedor.com')
+                    ->prefixIcon('heroicon-m-envelope'),
                 TextInput::make('address')
-                    ->required(),
+                    ->label('Dirección')
+                    ->required()
+                    ->placeholder('Calle 123 #45-67')
+                    ->prefixIcon('heroicon-m-map-pin'),
                 Select::make('status')
                     ->label('Estado')
                     ->options([
                         'active' => 'Activo',
                         'inactive' => 'Inactivo',
                     ])
+                    ->default('active')
+                    ->required()
+                    ->prefixIcon('heroicon-m-check-circle'),
             ]);
     }
 }

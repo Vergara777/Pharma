@@ -79,8 +79,12 @@ class ListCashSessions extends ListRecords
                             ->prefix('$')
                             ->placeholder('150.000')
                             ->helperText('Dinero físico contado en la caja')
-                            ->extraInputAttributes(['data-money-format' => true])
+                            ->extraAlpineAttributes([
+                                'x-mask:dynamic' => "\$money(\$input, '.', ',', 0)",
+                                'x-on:focus' => "\$el.value == 0 ? \$el.value = '' : null",
+                            ])
                             ->live(onBlur: true)
+                            ->formatStateUsing(fn ($state) => $state ? number_format((float) str_replace(['.', ','], '', $state), 0, '', '.') : '0')
                             ->dehydrateStateUsing(fn ($state) => $state ? (int) str_replace(['.', ','], '', $state) : 0),
                         Placeholder::make('difference_display')
                             ->label('Diferencia')
@@ -193,7 +197,11 @@ class ListCashSessions extends ListRecords
                         ->prefix('$')
                         ->placeholder('50.000')
                         ->helperText('Dinero en efectivo con el que inicia la caja')
-                        ->extraInputAttributes(['data-money-format' => true])
+                        ->extraAlpineAttributes([
+                            'x-mask:dynamic' => "\$money(\$input, '.', ',', 0)",
+                            'x-on:focus' => "\$el.value == 0 ? \$el.value = '' : null",
+                        ])
+                        ->formatStateUsing(fn ($state) => $state ? number_format((float) str_replace(['.', ','], '', $state), 0, '', '.') : '0')
                         ->dehydrateStateUsing(fn ($state) => $state ? (int) str_replace(['.', ','], '', $state) : 0),
                 ])
                 ->action(function (array $data) {

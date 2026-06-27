@@ -15,19 +15,24 @@ class CategoryForm
         return $schema
             ->components([
                 TextInput::make('name')
-                    ->required(),
+                    ->label('Nombre de la Categoría')
+                    ->required()
+                    ->placeholder('Escribe el nombre...')
+                    ->prefixIcon('heroicon-m-tag'),
                 TextInput::make('description')
-                    ->required(),
+                    ->label('Descripción')
+                    ->required()
+                    ->placeholder('Escribe una descripción...')
+                    ->prefixIcon('heroicon-m-chat-bubble-bottom-center-text'),
                 Select::make('status')
+                    ->label('Estado')
                     ->options([
                         'active' => 'Activo',
                         'inactive' => 'Inactivo',
                     ])
                     ->default('active')
-                    ->required(),
-                Action::make('delete')
-                    ->action(fn(Post $record) => $record->delete())
-                    ->requiresConfirmation()
+                    ->required()
+                    ->prefixIcon('heroicon-m-check-circle'),
             ]);
 
 

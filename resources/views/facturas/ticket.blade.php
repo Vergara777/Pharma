@@ -266,7 +266,7 @@
     <div class="info-section">
         <div class="info-row">
             <span class="info-label">Caja:</span>
-            <span>{{ $factura->cash_session->cash_session_number }}</span>
+           
         </div>
  </div>
     

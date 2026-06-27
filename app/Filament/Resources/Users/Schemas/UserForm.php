@@ -53,19 +53,23 @@ class UserForm
                                 TextInput::make('document_number')
                                     ->label('Número de Documento')
                                     ->required()
-                                    ->maxLength(10),
-
+                                    ->maxLength(10)
+                                    ->placeholder('1234567890')
+                                    ->prefixIcon('heroicon-o-identification'),
                                 TextInput::make('name')
                                     ->label('Nombre Completo')
                                     ->required()
-                                    ->maxLength(100),
-                                
+                                    ->maxLength(100)
+                                    ->placeholder('Juan Pérez')
+                                    ->prefixIcon('heroicon-o-user'),
                                 TextInput::make('email')
                                     ->label('Correo Electrónico')
                                     ->email()
                                     ->required()
                                     ->unique(ignoreRecord: true)
-                                    ->maxLength(150),
+                                    ->maxLength(150)
+                                    ->placeholder('juan@correo.com')
+                                    ->prefixIcon('heroicon-o-envelope'),
                             ]),
                         
                         Grid::make(2)
@@ -73,11 +77,15 @@ class UserForm
                                 TextInput::make('phone')
                                     ->label('Teléfono')
                                     ->tel()
-                                    ->maxLength(10),
+                                    ->maxLength(10)
+                                    ->placeholder('3001234567')
+                                    ->prefixIcon('heroicon-o-phone'),
                                 
                                 TextInput::make('id_number')
                                     ->label('Nº Identificación')
-                                    ->maxLength(10),
+                                    ->maxLength(10)
+                                    ->placeholder('ID-001')
+                                    ->prefixIcon('heroicon-o-hashtag'),
                             ]),
                         
                         Grid::make(2)
@@ -90,7 +98,9 @@ class UserForm
                                 
                                 TextInput::make('address')
                                     ->label('Dirección')
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->placeholder('Calle 123 # 45-67')
+                                    ->prefixIcon('heroicon-o-map-pin'),
                             ]),
                     ])
                     ->columns(1),
@@ -100,7 +110,9 @@ class UserForm
                     ->schema([
                         TextInput::make('position')
                             ->label('Cargo/Posición')
-                            ->maxLength(100),
+                            ->maxLength(100)
+                            ->placeholder('Regente de Farmacia')
+                            ->prefixIcon('heroicon-o-briefcase'),
                         
                         DatePicker::make('hire_date')
                             ->label('Fecha de Contratación')
